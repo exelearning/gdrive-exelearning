@@ -72,7 +72,9 @@ export type InMemoryGoogleTokenClient = {
 };
 
 const DEFAULT_EXPIRY_SKEW_MS = 60_000;
+const GOOGLE_IDENTITY_SERVICES_SRC = 'https://accounts.google.com/gsi/client';
 let defaultTokenClient: InMemoryGoogleTokenClient | null = null;
+let googleIdentityServicesPromise: Promise<void> | null = null;
 
 export function createGoogleTokenClient(
   options: GoogleTokenClientOptions,
@@ -109,8 +111,10 @@ export function createGoogleTokenClient(
     return tokenClient;
   };
 
-  const requestToken = (requestOptions: RequestGoogleAccessTokenOptions = {}) =>
-    new Promise<string>((resolve, reject) => {
+  const requestToken = async (requestOptions: RequestGoogleAccessTokenOptions = {}) => {
+    await loadGoogleIdentityServices();
+
+    return new Promise<string>((resolve, reject) => {
       const client = getTokenClient();
 
       client.callback = (response) => {
@@ -140,6 +144,7 @@ export function createGoogleTokenClient(
         scope: requestOptions.scope,
       });
     });
+  };
 
   return {
     getAccessToken: (requestOptions) => {
@@ -202,4 +207,53 @@ function getRequiredGoogleClientId(): string {
   }
 
   return clientId;
+}
+
+async function loadGoogleIdentityServices(): Promise<void> {
+  if (window.google?.accounts?.oauth2) {
+    return;
+  }
+
+  googleIdentityServicesPromise ??= new Promise<void>((resolve, reject) => {
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${GOOGLE_IDENTITY_SERVICES_SRC}"]`,
+    );
+    const script = existingScript ?? document.createElement('script');
+
+    const timeout = window.setTimeout(() => {
+      reject(new Error('Timed out loading Google Identity Services.'));
+    }, 10_000);
+
+    const finish = () => {
+      window.clearTimeout(timeout);
+      if (window.google?.accounts?.oauth2) {
+        resolve();
+        return;
+      }
+      reject(new Error('Google Identity Services loaded, but OAuth is not available.'));
+    };
+
+    script.addEventListener('load', finish, { once: true });
+    script.addEventListener('error', () => {
+      window.clearTimeout(timeout);
+      reject(new Error('Failed to load Google Identity Services.'));
+    }, { once: true });
+
+    if (!existingScript) {
+      script.src = GOOGLE_IDENTITY_SERVICES_SRC;
+      script.async = true;
+      script.defer = true;
+      document.head.append(script);
+      return;
+    }
+
+    if (window.google?.accounts?.oauth2) {
+      finish();
+    }
+  }).catch((error: unknown) => {
+    googleIdentityServicesPromise = null;
+    throw error;
+  });
+
+  await googleIdentityServicesPromise;
 }
