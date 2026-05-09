@@ -83,8 +83,9 @@ export class EditorFrame {
   async requestSave(): Promise<SavedFile> {
     this.ensureReady();
     const requestId = this.nextRequestId('save');
-    const reply = await this.waitForReply(['SAVE_FILE'], ['REQUEST_SAVE_ERROR'], requestId, 60_000);
-    const message = reply as unknown as SaveFileResponse;
+    const replyPromise = this.waitForReply(['SAVE_FILE'], ['REQUEST_SAVE_ERROR'], requestId, 60_000);
+    this.post({ type: 'REQUEST_SAVE', requestId });
+    const message = (await replyPromise) as unknown as SaveFileResponse;
     return {
       bytes: normalizeBytes(message.bytes),
       filename: typeof message.filename === 'string' ? message.filename : undefined,

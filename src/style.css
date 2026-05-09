@@ -28,6 +28,11 @@ button:disabled {
   opacity: 0.6;
 }
 
+/* `[hidden]` must beat the more specific `.btn-primary { display: inline-flex }` rule. */
+[hidden] {
+  display: none !important;
+}
+
 .btn-primary,
 button.btn-primary {
   border-color: #1f6f46;
