@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="gdrive-exelearning">
+  <rect width="64" height="64" rx="8" fill="#f5f7fb"/>
+  <path d="M18 14h22l8 8v28H18z" fill="#ffffff" stroke="#2f4b7c" stroke-width="3"/>
+  <path d="M40 14v10h10" fill="none" stroke="#2f4b7c" stroke-width="3"/>
+  <path d="M25 33h18M25 41h14" stroke="#2d8a57" stroke-width="4" stroke-linecap="round"/>
+</svg>

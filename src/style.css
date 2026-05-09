@@ -1,0 +1,168 @@
+:root {
+  color: #1f2933;
+  background: #f6f8fb;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button {
+  min-height: 2.5rem;
+  border: 1px solid #1f6f46;
+  border-radius: 6px;
+  padding: 0.55rem 0.85rem;
+  background: #238655;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  border-color: #aab4c0;
+  background: #d8dee6;
+  color: #52616f;
+  cursor: not-allowed;
+}
+
+.app-shell {
+  width: min(960px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 1px solid #d9e2ec;
+  padding-bottom: 1.5rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0.5rem 0 0;
+  color: #52616f;
+}
+
+.app-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem 0;
+}
+
+.diagnostics {
+  border-top: 1px solid #d9e2ec;
+  padding-top: 1.5rem;
+}
+
+dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+dl div {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr;
+  gap: 1rem;
+}
+
+dt {
+  color: #52616f;
+}
+
+dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.status {
+  min-height: 1.5rem;
+  color: #334e68;
+}
+
+.status[data-kind="success"] {
+  color: #1f6f46;
+}
+
+.status[data-kind="warning"] {
+  color: #9a5b00;
+}
+
+.status[data-kind="error"] {
+  color: #b42318;
+}
+
+.editor-shell {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: 100vh;
+  background: #ffffff;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #d9e2ec;
+  padding: 0.65rem 1rem;
+}
+
+.editor-toolbar a {
+  color: #1f2933;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.editor-shell > .status {
+  margin: 0;
+  border-bottom: 1px solid #d9e2ec;
+  padding: 0.45rem 1rem;
+}
+
+.editor-host {
+  min-height: 0;
+}
+
+.editor-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .toolbar,
+  dl div {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    align-items: flex-start;
+  }
+}
