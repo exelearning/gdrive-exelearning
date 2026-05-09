@@ -14,12 +14,23 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   if (state.action !== 'create') {
     throw new Error('This endpoint only supports Google Drive create actions.');
   }
+  const createState = state;
 
   renderEditorPage(root, 'Creating a new .elpx file in Google Drive...');
   const status = new StatusView(requiredElement(root, '#status'));
   const saveButton = requiredElement(root, '#save-drive') as HTMLButtonElement;
+  const openButton = requiredElement(root, '#authorize-open') as HTMLButtonElement;
 
-  try {
+  openButton.textContent = 'Authorize and create';
+  openButton.addEventListener('click', () => {
+    openButton.disabled = true;
+    void createInDrive().catch((error: unknown) => {
+      openButton.disabled = false;
+      status.set(formatError(error), 'error');
+    });
+  });
+
+  async function createInDrive(): Promise<void> {
     status.set('Requesting Google authorization...');
     const token = await requestAccessToken({ interactive: true });
 
@@ -35,9 +46,9 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
       token,
       name: 'Untitled.elpx',
       bytes,
-      parentId: state.folderId,
-      fileId: state.folderId,
-      resourceKey: state.folderResourceKey,
+      parentId: createState.folderId,
+      fileId: createState.folderId,
+      resourceKey: createState.folderResourceKey,
     });
 
     const snapshot: OpenedDriveFileSnapshot = {
@@ -61,6 +72,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
 
     await editor.load();
     await editor.openFile({ bytes, filename: created.name });
+    openButton.hidden = true;
     saveButton.disabled = false;
     status.set(`Created ${created.name}.`, 'success');
     saveButton.addEventListener('click', () => void save());
@@ -89,8 +101,6 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
         saveButton.disabled = false;
       }
     }
-  } catch (error) {
-    status.set(formatError(error), 'error');
   }
 }
 

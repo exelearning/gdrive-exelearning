@@ -23,6 +23,7 @@ type GoogleTokenClientConfig = {
   scope: string;
   callback: (response: GoogleTokenResponse) => void;
   error_callback?: (error: unknown) => void;
+  include_granted_scopes?: boolean;
 };
 
 type GoogleTokenClient = {
@@ -85,6 +86,7 @@ export function createGoogleTokenClient(
   let tokenClient: GoogleTokenClient | null = null;
   let currentToken: GoogleAccessToken | null = null;
   let pendingRequest: Promise<string> | null = null;
+  let pendingReject: ((error: Error) => void) | null = null;
 
   const getOauth2 = () => {
     const oauth2 = window.google?.accounts?.oauth2;
@@ -106,6 +108,12 @@ export function createGoogleTokenClient(
       client_id: options.clientId,
       scope,
       callback: () => undefined,
+      include_granted_scopes: true,
+      error_callback: (error) => {
+        pendingRequest = null;
+        pendingReject?.(new Error(`Google authorization failed: ${String(error)}`));
+        pendingReject = null;
+      },
     });
 
     return tokenClient;
@@ -116,9 +124,11 @@ export function createGoogleTokenClient(
 
     return new Promise<string>((resolve, reject) => {
       const client = getTokenClient();
+      pendingReject = reject;
 
       client.callback = (response) => {
         pendingRequest = null;
+        pendingReject = null;
 
         if (response.error) {
           reject(new Error(response.error_description ?? response.error));

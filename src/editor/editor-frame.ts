@@ -1,4 +1,4 @@
-import { buildEditorBootHtml } from './editor-boot';
+import { EDITOR_INDEX_PATH } from '../config';
 import { isEditorMessage, normalizeBytes, type EditorMessage, type OpenFilePayload, type SaveFilePayload } from './editor-messages';
 
 type MessageHandler = (message: EditorMessage) => void;
@@ -18,16 +18,9 @@ export class EditorFrame {
   }
 
   async load(): Promise<void> {
-    const html = await buildEditorBootHtml();
-    const doc = this.iframe.contentDocument;
-    if (!doc) {
-      throw new Error('Could not access the editor iframe document.');
-    }
-
     const ready = this.waitFor('EXELEARNING_READY', 30_000);
-    doc.open();
-    doc.write(html);
-    doc.close();
+    this.iframe.addEventListener('load', () => this.injectBridge(), { once: true });
+    this.iframe.src = EDITOR_INDEX_PATH;
     await ready;
     this.loaded = true;
   }
@@ -104,5 +97,33 @@ export class EditorFrame {
     if (!this.loaded) {
       throw new Error('The eXeLearning editor is not ready yet.');
     }
+  }
+
+  private injectBridge(): void {
+    const doc = this.iframe.contentDocument;
+    if (!doc?.body) {
+      return;
+    }
+
+    const config = doc.createElement('script');
+    config.textContent = `window.__EXE_EMBEDDING_CONFIG__ = ${JSON.stringify({
+      host: 'gdrive-exelearning',
+      parentOrigin: window.location.origin,
+    })};`;
+    doc.head.append(config);
+
+    const bridge = doc.createElement('script');
+    bridge.textContent = `
+(() => {
+  const send = (type, payload) => window.parent.postMessage({ type, payload, source: 'gdrive-exelearning-bridge' }, window.location.origin);
+  window.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      send('REQUEST_SAVE');
+    }
+  }, true);
+  window.setTimeout(() => send('EXELEARNING_READY'), 0);
+})();`;
+    doc.body.append(bridge);
   }
 }

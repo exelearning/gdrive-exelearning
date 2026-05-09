@@ -13,13 +13,22 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     throw new Error('This endpoint only supports Google Drive open actions.');
   }
 
-  renderEditorPage(root, 'Opening from Google Drive...');
+  renderEditorPage(root, 'Ready to request Google authorization.');
   const status = new StatusView(requiredElement(root, '#status'));
   const saveButton = requiredElement(root, '#save-drive') as HTMLButtonElement;
+  const openButton = requiredElement(root, '#authorize-open') as HTMLButtonElement;
   const fileId = state.ids[0];
   const resourceKey = state.resourceKeys?.[fileId];
 
-  try {
+  openButton.addEventListener('click', () => {
+    openButton.disabled = true;
+    void openFromDrive().catch((error: unknown) => {
+      openButton.disabled = false;
+      status.set(formatError(error), 'error');
+    });
+  });
+
+  async function openFromDrive(): Promise<void> {
     status.set('Requesting Google authorization...');
     const token = await requestAccessToken({ interactive: true });
 
@@ -51,6 +60,7 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     await editor.load();
     await editor.openFile({ bytes, filename: metadata.name, readOnly: !canEdit });
     status.set(canEdit ? `Opened ${metadata.name}.` : `Opened ${metadata.name} in read-only mode.`, canEdit ? 'success' : 'warning');
+    openButton.hidden = true;
     saveButton.disabled = !canEdit;
 
     saveButton.addEventListener('click', () => void save());
@@ -91,8 +101,6 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
         event.preventDefault();
       }
     });
-  } catch (error) {
-    status.set(formatError(error), 'error');
   }
 }
 
@@ -101,7 +109,10 @@ export function renderEditorPage(root: HTMLElement, statusText: string): void {
     <main class="editor-shell">
       <header class="editor-toolbar">
         <a href="./" aria-label="Home">gdrive-exelearning</a>
-        <button id="save-drive" type="button" disabled>Save to Drive</button>
+        <div class="editor-actions">
+          <button id="authorize-open" type="button">Authorize and open</button>
+          <button id="save-drive" type="button" disabled>Save to Drive</button>
+        </div>
       </header>
       <p id="status" class="status" role="status">${statusText}</p>
       <section id="editor-host" class="editor-host" aria-label="eXeLearning editor"></section>
