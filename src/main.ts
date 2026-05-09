@@ -23,10 +23,14 @@ try {
 
 function normalizeRoute(pathname: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  let route = pathname;
   if (base && pathname.startsWith(base)) {
-    return pathname.slice(base.length) || '/';
+    route = pathname.slice(base.length) || '/';
   }
-  return pathname || '/';
+  if (route.length > 1 && route.endsWith('/')) {
+    return route.slice(0, -1);
+  }
+  return route || '/';
 }
 
 function escapeHtml(value: string): string {
