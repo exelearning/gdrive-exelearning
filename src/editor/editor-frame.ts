@@ -1,12 +1,29 @@
-import { EDITOR_INDEX_PATH } from '../config';
-import { isEditorMessage, normalizeBytes, type EditorMessage, type OpenFilePayload, type SaveFilePayload } from './editor-messages';
+import { buildEditorBootHtml } from './editor-boot';
+import {
+  isEditorMessage,
+  normalizeBytes,
+  type EditorMessage,
+  type OpenFileRequestData,
+  type SaveFileResponse,
+} from './editor-messages';
 
 type MessageHandler = (message: EditorMessage) => void;
+
+export interface OpenFileOptions {
+  bytes: ArrayBuffer;
+  filename: string;
+}
+
+export interface SavedFile {
+  bytes: ArrayBuffer;
+  filename?: string;
+}
 
 export class EditorFrame {
   private readonly iframe: HTMLIFrameElement;
   private readonly handlers = new Set<MessageHandler>();
-  private loaded = false;
+  private requestCounter = 0;
+  private ready = false;
 
   constructor(container: HTMLElement) {
     this.iframe = document.createElement('iframe');
@@ -18,39 +35,54 @@ export class EditorFrame {
   }
 
   async load(): Promise<void> {
-    const ready = this.waitFor('EXELEARNING_READY', 30_000);
-    this.iframe.addEventListener('load', () => this.injectBridge(), { once: true });
-    this.iframe.src = EDITOR_INDEX_PATH;
+    const ready = this.waitForType('EXELEARNING_READY', 30_000);
+    const html = await buildEditorBootHtml({ parentOrigin: window.location.origin });
+    this.iframe.srcdoc = html;
     await ready;
-    this.loaded = true;
+    this.ready = true;
   }
 
-  async openFile(payload: OpenFilePayload): Promise<void> {
-    this.ensureLoaded();
-    const loaded = this.waitFor('DOCUMENT_LOADED', 60_000);
-    this.post({ type: 'OPEN_FILE', payload }, [payload.bytes]);
-    await loaded;
+  async openFile(options: OpenFileOptions): Promise<void> {
+    this.ensureReady();
+    const requestId = this.nextRequestId('open');
+    const success = this.waitForReply(['OPEN_FILE_SUCCESS'], ['OPEN_FILE_ERROR'], requestId, 60_000);
+    this.post(
+      {
+        type: 'OPEN_FILE',
+        requestId,
+        data: { bytes: options.bytes, filename: options.filename } satisfies OpenFileRequestData,
+      },
+      [options.bytes],
+    );
+    await success;
   }
 
-  async requestSave(): Promise<SaveFilePayload> {
-    this.ensureLoaded();
-    const saved = this.waitFor<SaveFilePayload>('SAVE_FILE', 60_000);
-    this.post({ type: 'REQUEST_SAVE' });
-    const message = await saved;
-    const payload = message.payload;
-    if (!payload || typeof payload !== 'object') {
-      throw new Error('The editor returned an empty save payload.');
-    }
-    const rawPayload = payload as { bytes?: unknown; filename?: unknown };
+  /**
+   * Wait for the editor's Stage 2 readiness signal. The editor emits this once
+   * the Yjs project document has finished loading; only after this point is it
+   * safe to call REQUEST_SAVE / GET_STATE.
+   */
+  waitForDocumentLoaded(timeoutMs = 60_000): Promise<EditorMessage> {
+    this.ensureReady();
+    return this.waitForType('DOCUMENT_LOADED', timeoutMs);
+  }
+
+  async requestSave(): Promise<SavedFile> {
+    this.ensureReady();
+    const requestId = this.nextRequestId('save');
+    const reply = await this.waitForReply(['SAVE_FILE'], ['REQUEST_SAVE_ERROR'], requestId, 60_000);
+    const message = reply as unknown as SaveFileResponse;
     return {
-      bytes: normalizeBytes(rawPayload.bytes),
-      filename: typeof rawPayload.filename === 'string' ? rawPayload.filename : undefined,
+      bytes: normalizeBytes(message.bytes),
+      filename: typeof message.filename === 'string' ? message.filename : undefined,
     };
   }
 
   onMessage(handler: MessageHandler): () => void {
     this.handlers.add(handler);
-    return () => this.handlers.delete(handler);
+    return () => {
+      this.handlers.delete(handler);
+    };
   }
 
   destroy(): void {
@@ -59,15 +91,29 @@ export class EditorFrame {
     this.iframe.remove();
   }
 
-  private post(message: EditorMessage, transfer?: Transferable[]): void {
+  private ensureReady(): void {
+    if (!this.ready) {
+      throw new Error('The eXeLearning editor is not ready yet.');
+    }
+  }
+
+  private nextRequestId(prefix: string): string {
+    this.requestCounter += 1;
+    return `gdrive-exelearning-${prefix}-${this.requestCounter}`;
+  }
+
+  private post(message: EditorMessage, transfer: Transferable[] = []): void {
     const target = this.iframe.contentWindow;
     if (!target) {
       throw new Error('The editor iframe is not available.');
     }
-    target.postMessage(message, window.location.origin, transfer ?? []);
+    // The iframe is loaded via srcdoc, which gives it a null origin. Using the
+    // parent's origin here would silently drop the message, so '*' is required
+    // and is consistent with the official EmbeddingBridge examples.
+    target.postMessage(message, '*', transfer);
   }
 
-  private waitFor<TPayload = unknown>(type: EditorMessage['type'], timeoutMs: number): Promise<EditorMessage<TPayload>> {
+  private waitForType(type: string, timeoutMs: number): Promise<EditorMessage> {
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         unsubscribe();
@@ -78,7 +124,39 @@ export class EditorFrame {
         if (message.type === type) {
           window.clearTimeout(timeout);
           unsubscribe();
-          resolve(message as EditorMessage<TPayload>);
+          resolve(message);
+        }
+      });
+    });
+  }
+
+  private waitForReply(
+    successTypes: readonly string[],
+    errorTypes: readonly string[],
+    requestId: string,
+    timeoutMs: number,
+  ): Promise<EditorMessage> {
+    return new Promise((resolve, reject) => {
+      const timeout = window.setTimeout(() => {
+        unsubscribe();
+        reject(new Error(`Timed out waiting for the eXeLearning editor to respond to ${requestId}.`));
+      }, timeoutMs);
+
+      const unsubscribe = this.onMessage((message) => {
+        if (message.requestId !== requestId) {
+          return;
+        }
+        if (successTypes.includes(message.type)) {
+          window.clearTimeout(timeout);
+          unsubscribe();
+          resolve(message);
+          return;
+        }
+        if (errorTypes.includes(message.type)) {
+          window.clearTimeout(timeout);
+          unsubscribe();
+          const errorMessage = typeof message['error'] === 'string' ? message['error'] : message.type;
+          reject(new Error(`The eXeLearning editor reported an error: ${errorMessage}`));
         }
       });
     });
@@ -92,38 +170,4 @@ export class EditorFrame {
       handler(event.data);
     }
   };
-
-  private ensureLoaded(): void {
-    if (!this.loaded) {
-      throw new Error('The eXeLearning editor is not ready yet.');
-    }
-  }
-
-  private injectBridge(): void {
-    const doc = this.iframe.contentDocument;
-    if (!doc?.body) {
-      return;
-    }
-
-    const config = doc.createElement('script');
-    config.textContent = `window.__EXE_EMBEDDING_CONFIG__ = ${JSON.stringify({
-      host: 'gdrive-exelearning',
-      parentOrigin: window.location.origin,
-    })};`;
-    doc.head.append(config);
-
-    const bridge = doc.createElement('script');
-    bridge.textContent = `
-(() => {
-  const send = (type, payload) => window.parent.postMessage({ type, payload, source: 'gdrive-exelearning-bridge' }, window.location.origin);
-  window.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
-      event.preventDefault();
-      send('REQUEST_SAVE');
-    }
-  }, true);
-  window.setTimeout(() => send('EXELEARNING_READY'), 0);
-})();`;
-    doc.body.append(bridge);
-  }
 }

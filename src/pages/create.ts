@@ -1,7 +1,7 @@
 import { requestAccessToken } from '../auth/google-token-client';
 import { BLANK_TEMPLATE_PATH } from '../config';
 import { createFile } from '../drive/drive-api';
-import { parseDriveState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
+import { parseDriveState, type DriveCreateState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
 import { confirmOverwriteRemoteChange } from '../ui/dialogs';
@@ -15,6 +15,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     throw new Error('This endpoint only supports Google Drive create actions.');
   }
   const createState = state;
+  cleanCreateUrl(createState);
 
   renderEditorPage(root, 'Creating a new .elpx file in Google Drive...');
   const status = new StatusView(requiredElement(root, '#status'));
@@ -62,16 +63,14 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     status.set('Loading eXeLearning editor...');
     const editor = new EditorFrame(requiredElement(root, '#editor-host'));
     editor.onMessage((message) => {
-      if (message.type === 'DOCUMENT_CHANGED') {
+      if (message.type === 'EXELEARNING_EVENT' && (message as { event?: string }).event === 'PROJECT_DIRTY') {
         status.set('Unsaved changes.', 'warning');
-      }
-      if (message.type === 'REQUEST_SAVE') {
-        void save();
       }
     });
 
     await editor.load();
     await editor.openFile({ bytes, filename: created.name });
+    await editor.waitForDocumentLoaded();
     openButton.hidden = true;
     saveButton.disabled = false;
     status.set(`Created ${created.name}.`, 'success');
@@ -110,4 +109,21 @@ function requiredElement(root: HTMLElement, selector: string): HTMLElement {
     throw new Error(`Missing UI element ${selector}.`);
   }
   return element;
+}
+
+/**
+ * Replace the URL-encoded JSON `?state=` query with a compact, readable form so
+ * the address bar stays clean while the editor is loaded. The parsed state has
+ * already been captured by the caller.
+ */
+function cleanCreateUrl(state: DriveCreateState): void {
+  const url = new URL(window.location.href);
+  url.search = '';
+  if (state.folderId) {
+    url.searchParams.set('folderId', state.folderId);
+  }
+  if (state.userId) {
+    url.searchParams.set('userId', state.userId);
+  }
+  window.history.replaceState(null, '', url.toString());
 }

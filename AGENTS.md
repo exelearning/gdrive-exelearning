@@ -143,22 +143,58 @@ These are natural-language guidelines for agents to follow when developing the `
 ## Editor integration conventions
 
 - Embed the static editor in an iframe.
-- Load the editor from `public/editor/index.html`.
-- Inject a `<base>` tag pointing to the editor folder.
-- Define `window.__EXE_EMBEDDING_CONFIG__` inside the iframe document.
-- Inject only a tiny bridge script for:
-  - Ctrl/Cmd+S forwarding.
-  - readiness forwarding if needed.
-  - path/config fixes if needed.
-- Prefer the official neutral postMessage protocol:
-  - `EXELEARNING_READY`
-  - `OPEN_FILE`
-  - `DOCUMENT_LOADED`
-  - `DOCUMENT_CHANGED`
-  - `REQUEST_SAVE`
-  - `SAVE_FILE`
+- Load the editor by fetching `public/editor/index.html` and writing the
+  transformed HTML to `iframe.srcdoc`. Setting `iframe.src` directly does not
+  work because the editor's `RuntimeConfig` reads
+  `window.__EXE_EMBEDDING_CONFIG__` during the initial bundle load — long
+  before any `iframe.load` listener could inject a script.
+- Always inject these into the iframe HTML before any editor `<script>` tag:
+  1. A `<base>` tag pointing at the absolute editor folder
+     (`https://<host>/gdrive-exelearning/editor/`). Without it, the editor's
+     relative URLs (`./libs/...`, `./app/...`) resolve against `about:srcdoc`
+     and 404.
+  2. A `<script>` that defines `window.__EXE_EMBEDDING_CONFIG__` with at least:
+     ```js
+     {
+       basePath: '/gdrive-exelearning/editor', // no trailing slash
+       parentOrigin: window.location.origin,
+       trustedOrigins: [window.location.origin],
+     }
+     ```
+     Without an explicit `basePath`, the editor's auto-detection uses
+     `window.location.pathname` and ends up fetching i18n / static assets from
+     the parent route (e.g. `/gdrive-exelearning/open/app/...`) which 404s.
+- Inject only a tiny bridge script for Ctrl/Cmd+S forwarding. Do **not**
+  synthesize `EXELEARNING_READY` or `DOCUMENT_LOADED` from the parent — the
+  editor's own `EmbeddingBridge`
+  (`public/app/core/EmbeddingBridge.js`) emits them at the right moment.
+  Faking them races the editor's bootstrap and causes `OPEN_FILE` to be
+  delivered before the bridge has attached its listener, so the editor opens
+  an empty default document instead of the file.
+- Use the official postMessage protocol exactly:
+  - `EXELEARNING_READY` — Stage 1, infrastructure ready, capabilities listed.
+  - `OPEN_FILE` (parent → editor): `{ type, requestId, data: { bytes, filename } }`.
+  - `OPEN_FILE_SUCCESS` / `OPEN_FILE_ERROR` (editor → parent, correlated by `requestId`).
+  - `DOCUMENT_LOADED` — Stage 2, project document is fully loaded.
+  - `REQUEST_SAVE` (parent → editor): `{ type, requestId }`.
+  - `SAVE_FILE` (editor → parent): `{ type, requestId, bytes, filename, size }` with fields at the top level (not under `data`).
+  - `EXELEARNING_EVENT` carries change notifications such as
+    `event: 'PROJECT_DIRTY' | 'PROJECT_SAVED'` under `data.isDirty`.
 - Do not copy integration-specific message names such as `WP_REQUEST_SAVE`.
-- Transfer `.elpx` bytes as `ArrayBuffer`.
+- Transfer `.elpx` bytes as `ArrayBuffer` and pass them to `postMessage` in the
+  transferable list to avoid large copies.
+- Use `'*'` as the `targetOrigin` when posting to the iframe. Because the
+  iframe is loaded via `srcdoc`, its effective origin is `null` and a strict
+  origin check on the parent side would silently drop every message.
+
+### Reference
+
+The canonical embedding documentation lives in the eXeLearning repository at
+`doc/development/embedding.md`. The bridge implementation it describes lives
+at `public/app/core/EmbeddingBridge.js`, and the runtime configuration that
+reads `window.__EXE_EMBEDDING_CONFIG__` is at
+`public/app/core/RuntimeConfig.js`. When in doubt about message shape or
+lifecycle, read those files in the cloned editor source rather than guessing.
 
 ## Route conventions
 

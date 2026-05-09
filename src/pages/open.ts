@@ -1,6 +1,6 @@
 import { requestAccessToken } from '../auth/google-token-client';
 import { fetchEditableDriveFile } from '../drive/drive-download';
-import { parseDriveState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
+import { parseDriveState, type DriveOpenState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
 import { confirmOverwriteRemoteChange, showError } from '../ui/dialogs';
@@ -12,6 +12,7 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
   if (state.action !== 'open') {
     throw new Error('This endpoint only supports Google Drive open actions.');
   }
+  cleanOpenUrl(state);
 
   renderEditorPage(root, 'Ready to request Google authorization.');
   const status = new StatusView(requiredElement(root, '#status'));
@@ -48,17 +49,16 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     const editor = new EditorFrame(requiredElement(root, '#editor-host'));
     let dirty = false;
     editor.onMessage((message) => {
-      if (message.type === 'DOCUMENT_CHANGED') {
+      if (message.type === 'EXELEARNING_EVENT' && (message as { event?: string }).event === 'PROJECT_DIRTY') {
         dirty = true;
         status.set('Unsaved changes.', 'warning');
-      }
-      if (message.type === 'REQUEST_SAVE' && canEdit) {
-        void save();
       }
     });
 
     await editor.load();
-    await editor.openFile({ bytes, filename: metadata.name, readOnly: !canEdit });
+    status.set(`Opening ${metadata.name}...`);
+    await editor.openFile({ bytes, filename: metadata.name });
+    await editor.waitForDocumentLoaded();
     status.set(canEdit ? `Opened ${metadata.name}.` : `Opened ${metadata.name} in read-only mode.`, canEdit ? 'success' : 'warning');
     openButton.hidden = true;
     saveButton.disabled = !canEdit;
@@ -126,4 +126,24 @@ function requiredElement(root: HTMLElement, selector: string): HTMLElement {
     throw new Error(`Missing UI element ${selector}.`);
   }
   return element;
+}
+
+/**
+ * Replace the noisy `?state=<URL-encoded JSON>` query that Google Drive sends with
+ * a compact `?fileId=...` query so the address bar is readable while the user
+ * works inside the editor. The original state has already been parsed and is
+ * kept in memory by the caller.
+ */
+function cleanOpenUrl(state: DriveOpenState): void {
+  const fileId = state.ids[0];
+  if (!fileId) {
+    return;
+  }
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.searchParams.set('fileId', fileId);
+  if (state.userId) {
+    url.searchParams.set('userId', state.userId);
+  }
+  window.history.replaceState(null, '', url.toString());
 }
