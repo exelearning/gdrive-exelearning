@@ -145,7 +145,7 @@ dd {
 
 .editor-shell {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   height: 100vh;
   background: #ffffff;
 }
@@ -153,7 +153,6 @@ dd {
 .editor-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   border-bottom: 1px solid #d9e2ec;
   padding: 0.55rem 1rem;
@@ -168,7 +167,35 @@ dd {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 1;
   min-width: 0;
+}
+
+.editor-status {
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: #52616f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-status:empty {
+  visibility: hidden;
+}
+
+.editor-status[data-kind="success"] {
+  color: #1f6f46;
+}
+
+.editor-status[data-kind="warning"] {
+  color: #9a5b00;
+}
+
+.editor-status[data-kind="error"] {
+  color: #b42318;
 }
 
 .editor-title__separator {
@@ -192,13 +219,6 @@ dd {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-}
-
-.editor-shell > .status {
-  margin: 0;
-  border-bottom: 1px solid #d9e2ec;
-  padding: 0.45rem 1rem;
-  font-size: 0.95rem;
 }
 
 .editor-host {

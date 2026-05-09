@@ -19,13 +19,13 @@ export function renderEditorPage(root: HTMLElement, statusText: string): void {
     <main class="editor-shell">
       <header class="editor-toolbar">
         <h1 class="editor-title">eXeLearning<span class="editor-title__separator"> – </span><span id="editor-filename" class="editor-title__filename">gdrive-exelearning</span></h1>
+        <p id="status" class="editor-status" role="status" aria-live="polite">${escapeHtml(statusText)}</p>
         <div class="editor-actions">
           <button id="authorize-open" type="button" class="btn-primary">Authorize and open</button>
           <button id="save-drive" type="button" class="btn-primary" disabled>${DRIVE_ICON_SVG}<span>Save to Drive</span></button>
           <button id="close-editor" type="button" class="btn-secondary" aria-label="Close editor">Close</button>
         </div>
       </header>
-      <p id="status" class="status" role="status">${escapeHtml(statusText)}</p>
       <section id="editor-host" class="editor-host" aria-label="eXeLearning editor"></section>
     </main>
   `;
