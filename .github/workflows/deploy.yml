@@ -33,8 +33,6 @@ jobs:
 
       - name: Download eXeLearning editor
         run: make download-editor
-        env:
-          EDITOR_ZIP_URL: ${{ vars.EDITOR_ZIP_URL }}
 
       - name: Build
         run: npm run build
