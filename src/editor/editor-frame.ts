@@ -1,4 +1,4 @@
-import { buildEditorBootHtml } from './editor-boot';
+import { buildEditorBootHtml, type BuildEditorBootHtmlOptions } from './editor-boot';
 import {
   isEditorMessage,
   normalizeBytes,
@@ -19,13 +19,17 @@ export interface SavedFile {
   filename?: string;
 }
 
+export type EditorFrameOptions = Pick<BuildEditorBootHtmlOptions, 'hideUI'>;
+
 export class EditorFrame {
   private readonly iframe: HTMLIFrameElement;
   private readonly handlers = new Set<MessageHandler>();
+  private readonly options: EditorFrameOptions;
   private requestCounter = 0;
   private ready = false;
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, options: EditorFrameOptions = {}) {
+    this.options = options;
     this.iframe = document.createElement('iframe');
     this.iframe.className = 'editor-frame';
     this.iframe.title = 'eXeLearning editor';
@@ -36,12 +40,31 @@ export class EditorFrame {
 
   async load(): Promise<void> {
     const ready = this.waitForType('EXELEARNING_READY', 30_000);
-    const html = await buildEditorBootHtml({ parentOrigin: window.location.origin });
+    const html = await buildEditorBootHtml({
+      parentOrigin: window.location.origin,
+      hideUI: this.options.hideUI,
+    });
     this.iframe.srcdoc = html;
     await ready;
     this.ready = true;
+    // Defensive: re-apply hideUI in case the editor missed the initial config.
+    if (this.options.hideUI) {
+      this.post({
+        type: 'CONFIGURE',
+        requestId: this.nextRequestId('configure'),
+        data: { hideUI: this.options.hideUI },
+      });
+    }
   }
 
+  /**
+   * Send the .elpx bytes to the editor and resolve when the editor confirms
+   * the import via OPEN_FILE_SUCCESS. The editor's bridge sends this message
+   * AFTER `refreshAfterDirectImport` completes, so the project is fully loaded
+   * by the time this resolves — there is no separate DOCUMENT_LOADED to wait
+   * for at this point (DOCUMENT_LOADED only fires once during the editor's
+   * initial empty-project bootstrap).
+   */
   async openFile(options: OpenFileOptions): Promise<void> {
     this.ensureReady();
     const requestId = this.nextRequestId('open');
@@ -55,16 +78,6 @@ export class EditorFrame {
       [options.bytes],
     );
     await success;
-  }
-
-  /**
-   * Wait for the editor's Stage 2 readiness signal. The editor emits this once
-   * the Yjs project document has finished loading; only after this point is it
-   * safe to call REQUEST_SAVE / GET_STATE.
-   */
-  waitForDocumentLoaded(timeoutMs = 60_000): Promise<EditorMessage> {
-    this.ensureReady();
-    return this.waitForType('DOCUMENT_LOADED', timeoutMs);
   }
 
   async requestSave(): Promise<SavedFile> {

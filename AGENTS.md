@@ -108,6 +108,32 @@ These are natural-language guidelines for agents to follow when developing the `
   OUTPUT_DIR=$(EDITOR_OUTPUT_DIR) bun run build:static
   ```
 
+## Drive UI integration UX
+
+- The Drive UI integration sends users to `/open?state=<URL-encoded JSON>` and
+  `/create?state=<URL-encoded JSON>`. Parse the state immediately and replace
+  the URL with `history.replaceState(null, '', '?fileId=…')` (or
+  `?folderId=…`) so the address bar stays readable while the editor is loaded.
+- On both routes, attempt a **silent** Google authorization
+  (`requestAccessToken({ prompt: 'none', interactive: false })`) on page load
+  and start the open/create flow if it succeeds. This is the only way to
+  bypass the intermediate "Authorize and open" click for users who have
+  already granted access, since Google Identity Services rejects
+  `prompt: 'consent'` calls without a user gesture for first-time consent.
+- Disable the visible "Authorize and …" button while the silent attempt is
+  in flight to avoid racing the same `pendingRequest` in the token client.
+  Re-enable it (and surface a "Click … to continue" hint) only after the
+  silent attempt has settled with an error.
+- Mirror wp-exelearning's "Saving…" overlay
+  (`assets/js/exelearning-editor.js`): a full-screen blocking modal with a
+  spinner during `requestSave` + Drive upload, switched to an error state
+  with a Close button on failure. Implementation lives in
+  `src/ui/dialogs.ts` (`SavingModal`).
+- The editor toolbar should show "eXeLearning – &lt;filename&gt;" on the left,
+  a "Save to Drive" button with an inline Drive logo SVG, and a "Close" button
+  on the right. Hide the in-editor "Save" via `hideUI` so the parent button is
+  the only save affordance.
+
 ## Google OAuth and Drive conventions
 
 - Use Google Identity Services token model:
@@ -175,11 +201,25 @@ These are natural-language guidelines for agents to follow when developing the `
   - `EXELEARNING_READY` — Stage 1, infrastructure ready, capabilities listed.
   - `OPEN_FILE` (parent → editor): `{ type, requestId, data: { bytes, filename } }`.
   - `OPEN_FILE_SUCCESS` / `OPEN_FILE_ERROR` (editor → parent, correlated by `requestId`).
-  - `DOCUMENT_LOADED` — Stage 2, project document is fully loaded.
+  - `DOCUMENT_LOADED` — Stage 2, fired exactly **once** during the editor's
+    initial empty-project bootstrap. Subsequent `OPEN_FILE` calls do **not**
+    re-emit it (the underlying `documentReady` Promise can only resolve one
+    time). Treat `OPEN_FILE_SUCCESS` as the "file is ready" signal: the
+    editor sends it from `EmbeddingBridge.handleOpenFile` only after
+    `project.refreshAfterDirectImport()` has completed.
   - `REQUEST_SAVE` (parent → editor): `{ type, requestId }`.
   - `SAVE_FILE` (editor → parent): `{ type, requestId, bytes, filename, size }` with fields at the top level (not under `data`).
   - `EXELEARNING_EVENT` carries change notifications such as
     `event: 'PROJECT_DIRTY' | 'PROJECT_SAVED'` under `data.isDirty`.
+- `__EXE_EMBEDDING_CONFIG__.hideUI` is the canonical way to hide the editor's
+  built-in toolbar (file menu, save button, user menu). Mirror the same list
+  with a defensive `display: none !important` style sheet (see
+  `editor-boot.ts` `FORCE_HIDE_SELECTORS`) so a re-render in the editor cannot
+  accidentally bring the duplicate "Save" button back. The parent UI must own
+  the only "Save" affordance the user sees.
+- After receiving `EXELEARNING_READY`, send a `CONFIGURE` message with the
+  same `hideUI` payload as a defensive re-application. The editor's bridge
+  applies it via `applyHideUI` regardless of when it arrives.
 - Do not copy integration-specific message names such as `WP_REQUEST_SAVE`.
 - Transfer `.elpx` bytes as `ArrayBuffer` and pass them to `postMessage` in the
   transferable list to avoid large copies.

@@ -3,7 +3,42 @@ import { EDITOR_INDEX_PATH, EDITOR_PATH } from '../config';
 export interface BuildEditorBootHtmlOptions {
   parentOrigin: string;
   trustedOrigins?: string[];
+  hideUI?: Partial<EditorHideUI>;
 }
+
+export interface EditorHideUI {
+  fileMenu: boolean;
+  saveButton: boolean;
+  shareButton: boolean;
+  userMenu: boolean;
+  downloadButton: boolean;
+  helpMenu: boolean;
+}
+
+const DEFAULT_HIDE_UI: EditorHideUI = {
+  fileMenu: true,
+  saveButton: true,
+  shareButton: false,
+  userMenu: true,
+  downloadButton: false,
+  helpMenu: false,
+};
+
+/**
+ * Editor DOM ids that the embedded editor exposes for the in-editor toolbar.
+ * We hide them with `display: none !important` as a hard backstop in case the
+ * built-in `hideUI` config does not catch a particular element. This mirrors
+ * the same defensive list used by wp-exelearning so the parent UI is the only
+ * "Save" affordance the user sees.
+ */
+const FORCE_HIDE_SELECTORS = [
+  '#dropdownFile',
+  '#head-top-save-button',
+  '#head-bottom-user-logged',
+  '#exe-concurrent-users',
+  '#mobile-navbar-button-save',
+  '#mobile-navbar-button-openuserodefiles',
+] as const;
 
 /**
  * Fetches the static eXeLearning editor's index.html and returns a transformed
@@ -14,8 +49,10 @@ export interface BuildEditorBootHtmlOptions {
  *      iframe is loaded via about:srcdoc (which has no real URL).
  *   2. Injects window.__EXE_EMBEDDING_CONFIG__ BEFORE any editor script runs,
  *      so the editor's RuntimeConfig picks up the explicit basePath, parent
- *      origin, and trusted origins.
- *   3. Injects a tiny Ctrl/Cmd+S bridge that forwards REQUEST_SAVE to the
+ *      origin, trusted origins and hideUI flags.
+ *   3. Adds a defensive style sheet that force-hides editor-internal UI we
+ *      replace from the parent (file menu, save button, user menu).
+ *   4. Injects a tiny Ctrl/Cmd+S bridge that forwards REQUEST_SAVE to the
  *      parent.
  *
  * The editor's own EmbeddingBridge (public/app/core/EmbeddingBridge.js) emits
@@ -46,13 +83,21 @@ export async function buildEditorBootHtml(options: BuildEditorBootHtmlOptions): 
   // RuntimeConfig.create() in app/core/RuntimeConfig.js reads it during the editor bootstrap,
   // long before our 'load' event listener could attach a script.
   const trustedOrigins = options.trustedOrigins ?? [options.parentOrigin];
+  const hideUI: EditorHideUI = { ...DEFAULT_HIDE_UI, ...options.hideUI };
   const config = dom.createElement('script');
   config.textContent = `window.__EXE_EMBEDDING_CONFIG__ = ${JSON.stringify({
     basePath: editorBasePath,
     parentOrigin: options.parentOrigin,
     trustedOrigins,
+    hideUI,
   })};`;
   dom.head.insertBefore(config, base.nextSibling);
+
+  // Defensive CSS to hide the editor's internal save / file menu / user menu
+  // even if the editor reorders or recreates them after the initial render.
+  const style = dom.createElement('style');
+  style.textContent = `${FORCE_HIDE_SELECTORS.join(',\n')} { display: none !important; }`;
+  dom.head.append(style);
 
   // Bridge: forward Ctrl/Cmd+S to the parent. EXELEARNING_READY / DOCUMENT_LOADED
   // are emitted by the editor itself, so we do not synthesize them here.
