@@ -13,7 +13,7 @@ export const EDITOR_PATH = `${APP_BASE_URL}editor/`;
 export const EDITOR_INDEX_PATH = `${EDITOR_PATH}index.html`;
 export const BLANK_TEMPLATE_PATH = `${APP_BASE_URL}templates/blank.elpx`;
 
-export const ELPX_MIME_TYPE = 'application/octet-stream';
+export const ELPX_MIME_TYPE = 'application/vnd.exelearning.elpx';
 
 export function requireGoogleClientId(): string {
   if (!GOOGLE_CLIENT_ID) {

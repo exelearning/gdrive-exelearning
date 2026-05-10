@@ -49,8 +49,14 @@ EXELEARNING_EDITOR_REF=main \
    - **New URL**: `https://<origin>/gdrive-exelearning/create`
    - **Default file extension**: `elpx`
    - **Secondary file extensions**: `elp`
-   - **MIME types**: `application/octet-stream`,
-     `application/vnd.exelearning.elpx`, `application/zip`.
+   - **Primary MIME type**: `application/vnd.exelearning.elpx` (what
+     this app emits when uploading from the editor).
+   - **Secondary MIME types**: `application/zip` and
+     `application/octet-stream` — needed so the integration also
+     matches `.elpx` / `.elp` files that arrived in Drive via drag-and-drop
+     or other clients, which tag them with one of those generic types.
+     Without these, Drive will not list **eXeLearning** under
+     **Open with** for those files.
 5. Copy the OAuth client ID into the build environment as
    `VITE_GOOGLE_CLIENT_ID` (and optionally `VITE_GOOGLE_API_KEY`). For
    GitHub Pages deploys, store them as repository secrets so the

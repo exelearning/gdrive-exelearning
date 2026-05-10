@@ -1,3 +1,5 @@
+import { ELPX_MIME_TYPE } from '../config';
+
 const DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
 const DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
 const MULTIPART_BOUNDARY = 'gdrive-exelearning-upload-boundary';
@@ -455,7 +457,7 @@ function normalizeCreateFileOptions(
     accessToken: options.token,
     name: options.name,
     content: options.bytes,
-    mimeType: 'application/octet-stream',
+    mimeType: ELPX_MIME_TYPE,
     parents: options.parentId ? [options.parentId] : undefined,
     resourceKeys:
       options.fileId && options.resourceKey

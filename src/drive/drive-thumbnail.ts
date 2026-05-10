@@ -3,13 +3,12 @@ import { ELPX_MIME_TYPE } from '../config';
 import { updateFileMetadata } from './drive-api';
 
 const SCREENSHOT_PATH = 'screenshot.png';
-const ELPX_CUSTOM_MIME_TYPE = 'application/vnd.exelearning.elpx';
 
 /**
  * Best-effort: lift the editor-generated `screenshot.png` from the freshly
- * saved `.elpx` and push it to Drive as `contentHints.thumbnail`, plus tag
- * the file with a non-zip MIME type so Drive shows our thumbnail instead of
- * its generic zip listing.
+ * saved `.elpx` and push it to Drive as `contentHints.thumbnail`, plus
+ * re-tag the file with our custom MIME so Drive shows our thumbnail
+ * instead of a generic zip listing.
  *
  * Failure is non-fatal: the save itself already succeeded by the time this
  * runs, and a missing thumbnail is a strictly cosmetic regression. We log
@@ -28,7 +27,7 @@ export async function publishElpxThumbnail(options: {
         token: options.token,
         fileId: options.fileId,
         resourceKey: options.resourceKey,
-        mimeType: ELPX_CUSTOM_MIME_TYPE,
+        mimeType: ELPX_MIME_TYPE,
       });
       return;
     }
@@ -36,7 +35,7 @@ export async function publishElpxThumbnail(options: {
       token: options.token,
       fileId: options.fileId,
       resourceKey: options.resourceKey,
-      mimeType: ELPX_CUSTOM_MIME_TYPE,
+      mimeType: ELPX_MIME_TYPE,
       thumbnail: { bytes: screenshot, mimeType: 'image/png' },
     });
   } catch (error) {
@@ -44,4 +43,4 @@ export async function publishElpxThumbnail(options: {
   }
 }
 
-export { ELPX_CUSTOM_MIME_TYPE, ELPX_MIME_TYPE };
+export { ELPX_MIME_TYPE };
