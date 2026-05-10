@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terms of Service — gdrive-exelearning</title>
+    <link rel="icon" type="image/svg+xml" href="./icons/exelearning.svg" />
+    <meta name="description" content="Terms of Service for gdrive-exelearning, a free open-source web application that lets you open, edit, and save eXeLearning .elpx files stored in Google Drive." />
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        --bg: #fafbfc;
+        --fg: #1f2328;
+        --muted: #57606a;
+        --border: #d0d7de;
+        --accent: #1a73e8;
+        --surface: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #e6edf3;
+          --muted: #8d96a0;
+          --border: #30363d;
+          --accent: #58a6ff;
+          --surface: #161b22;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--fg); }
+      main { max-width: 760px; margin: 2rem auto; padding: 1.5rem; }
+      header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+      header img { width: 40px; height: 40px; }
+      h1 { font-size: 1.6rem; margin: 0; }
+      h2 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+      p, ul { margin: 0.5rem 0; }
+      ul { padding-left: 1.25rem; }
+      a { color: var(--accent); }
+      .meta { color: var(--muted); font-size: 0.9rem; margin-top: -0.25rem; }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-top: 1.5rem;
+      }
+      footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      code { background: var(--surface); padding: 0.05rem 0.3rem; border-radius: 4px; border: 1px solid var(--border); font-size: 0.9em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="./icons/exelearning.svg" alt="" />
+        <div>
+          <h1>Terms of Service</h1>
+          <p class="meta">gdrive-exelearning · Last updated: 2026-05-10</p>
+        </div>
+      </header>
+
+      <p>
+        These Terms of Service (the &ldquo;Terms&rdquo;) govern your use of <strong>gdrive-exelearning</strong>
+        (the &ldquo;application&rdquo; or &ldquo;service&rdquo;), a free open-source web tool published by the
+        <a href="https://exelearning.net/" target="_blank" rel="noopener noreferrer">eXeLearning</a> project.
+        By using the application you agree to these Terms.
+      </p>
+
+      <h2>1. About this service</h2>
+      <p>
+        gdrive-exelearning is a browser-based application that lets you open, edit, and save
+        <code>.elpx</code> eXeLearning packages stored in your own Google Drive. The full source
+        code is available at
+        <a href="https://github.com/exelearning/gdrive-exelearning" target="_blank" rel="noopener noreferrer">github.com/exelearning/gdrive-exelearning</a>
+        and is distributed under the GNU Affero General Public License v3.0 or later (AGPL-3.0+).
+      </p>
+
+      <h2>2. License</h2>
+      <p>
+        The software is licensed under the AGPL-3.0+. The full license text is included in the
+        repository. You retain all rights to the <code>.elpx</code> files and any other content
+        you create or edit with the application.
+      </p>
+
+      <h2>3. How the application uses Google APIs</h2>
+      <p>
+        gdrive-exelearning runs entirely in your browser. It uses
+        <a href="https://developers.google.com/identity/oauth2/web/guides/overview" target="_blank" rel="noopener noreferrer">Google Identity Services</a>
+        for authentication and the
+        <a href="https://developers.google.com/drive" target="_blank" rel="noopener noreferrer">Google Drive API</a>
+        to read and write the <code>.elpx</code> files you choose to work with. Specifically:
+      </p>
+      <ul>
+        <li>The application requests only the <code>drive.file</code> and <code>drive.install</code> Google Drive scopes. It cannot read or modify any file you have not explicitly opened with it or created through it.</li>
+        <li>Your <code>.elpx</code> files remain in your own Google Drive. The application never copies, mirrors, or transmits your content to any server operated by the eXeLearning project.</li>
+        <li>Authentication tokens issued by Google live only in the memory of your browser tab and are discarded when the tab closes.</li>
+      </ul>
+
+      <h2>4. Authorization and revocation</h2>
+      <p>
+        You authorize the application with your own Google account. You can revoke that
+        authorization at any time at
+        <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a>.
+        Revocation takes effect immediately and disables the application for your account.
+      </p>
+
+      <h2>5. User responsibilities</h2>
+      <p>You are responsible for:</p>
+      <ul>
+        <li>The content you open, create, or edit with the application.</li>
+        <li>Compliance with the
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Google Terms of Service</a>
+          and the terms of any other third-party service you connect.</li>
+        <li>Backing up your work. The application does not provide a separate backup beyond the file revision history that Google Drive itself maintains.</li>
+        <li>Ensuring you have the right to use the resources, images, and other materials you include in your <code>.elpx</code> packages.</li>
+      </ul>
+
+      <h2>6. Disclaimer of warranty</h2>
+      <p>
+        The application is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without
+        warranty of any kind, express or implied, including but not limited to the warranties
+        of merchantability, fitness for a particular purpose, accuracy, and non-infringement.
+        You use the application at your own risk.
+      </p>
+
+      <h2>7. Limitation of liability</h2>
+      <p>
+        To the maximum extent permitted by applicable law, in no event shall the eXeLearning
+        project, its maintainers, or contributors be liable for any indirect, incidental,
+        special, consequential, or exemplary damages, including but not limited to damages for
+        loss of data, loss of profits, or service interruption, arising from or related to your
+        use of the application.
+      </p>
+
+      <h2>8. Third-party services</h2>
+      <p>
+        The application relies on Google services to function. Their availability, terms, and
+        privacy practices are outside the control of the eXeLearning project. Their respective
+        terms apply to your use of those services.
+      </p>
+
+      <h2>9. Open-source contributions</h2>
+      <p>
+        You are welcome to inspect, fork, modify, and redistribute the application under the
+        terms of AGPL-3.0+. Bug reports, security disclosures, and pull requests are welcome
+        through the
+        <a href="https://github.com/exelearning/gdrive-exelearning/issues" target="_blank" rel="noopener noreferrer">project issue tracker</a>.
+      </p>
+
+      <h2>10. Changes to these Terms</h2>
+      <p>
+        These Terms may be updated from time to time. The &ldquo;Last updated&rdquo; date at the
+        top reflects the most recent revision. Continued use of the application after a change
+        constitutes acceptance of the updated Terms.
+      </p>
+
+      <h2>11. Contact</h2>
+      <p>
+        For questions about these Terms, security reports, or licensing matters, please open an
+        issue at
+        <a href="https://github.com/exelearning/gdrive-exelearning/issues" target="_blank" rel="noopener noreferrer">github.com/exelearning/gdrive-exelearning/issues</a>
+        or contact the eXeLearning maintainers through the project website.
+      </p>
+
+      <div class="panel">
+        <p style="margin:0;">
+          By signing in to gdrive-exelearning with your Google account, you acknowledge that you
+          have read and agreed to these Terms of Service.
+        </p>
+      </div>
+
+      <footer>
+        gdrive-exelearning · Open source under
+        <a href="https://github.com/exelearning/gdrive-exelearning/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0+</a>
+        · <a href="./">Back to application</a>
+      </footer>
+    </main>
+  </body>
+</html>
