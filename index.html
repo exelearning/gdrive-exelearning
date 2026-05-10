@@ -4,11 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>gdrive-exelearning</title>
+    <meta
+      name="description"
+      content="Open, edit, and save eXeLearning .elpx projects directly from Google Drive."
+    />
     <link rel="icon" type="image/svg+xml" href="./icons/exelearning.svg" />
+    <!--
+      Google Search Console verification meta tag goes here once you start
+      the verification flow at https://search.google.com/search-console.
+      Replace REPLACE_ME with the value Search Console gives you and keep
+      the tag in place so Google can re-check ownership later.
+    -->
+    <!-- <meta name="google-site-verification" content="REPLACE_ME" /> -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+      .page-footer {
+        max-width: 64rem;
+        margin: 2rem auto 1.5rem;
+        padding: 0 1.5rem;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 0.875rem;
+        color: #57606a;
+        text-align: center;
+      }
+      .page-footer a {
+        color: inherit;
+        text-decoration: underline;
+      }
+      .page-footer a + a::before {
+        content: " · ";
+        margin: 0 0.25rem;
+      }
+      @media (prefers-color-scheme: dark) {
+        .page-footer { color: #8d96a0; }
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
+    <footer class="page-footer">
+      <a href="./privacy.html">Privacy Policy</a><a href="./terms.html">Terms of Service</a><a href="https://github.com/exelearning/gdrive-exelearning">Source code</a>
+    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
