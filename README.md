@@ -120,6 +120,11 @@ Set the default file extension to:
 elpx
 ```
 
+If you also want to open legacy v2 projects from Drive, add `elp` to the
+list of accepted extensions in the Drive UI integration. When the user
+saves an `.elp` opened this way, the app uploads a freshly exported
+`.elpx` next to the original (the legacy file is left untouched).
+
 Use these scopes:
 
 ```text

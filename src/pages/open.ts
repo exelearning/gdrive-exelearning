@@ -1,4 +1,5 @@
 import { requestAccessToken } from '../auth/google-token-client';
+import { createFile } from '../drive/drive-api';
 import { fetchEditableDriveFile } from '../drive/drive-download';
 import { parseDriveState, type DriveOpenState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
@@ -58,16 +59,27 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
 
     status.set('Fetching Google Drive metadata…');
     const { metadata, bytes } = await fetchEditableDriveFile({ token, fileId, resourceKey });
-    const canEdit = metadata.capabilities?.canEdit !== false;
-    const snapshot: OpenedDriveFileSnapshot = {
-      id: metadata.id,
-      name: metadata.name,
-      modifiedTime: metadata.modifiedTime,
-      version: metadata.version,
-      resourceKey,
-      canEdit,
-    };
-    setEditorTitle(root, metadata.name);
+    const isLegacyElp = isLegacyElpFilename(metadata.name);
+    // Legacy .elp files cannot be overwritten — saving always produces a new
+    // .elpx companion in the same folder. We therefore consider the editor
+    // "writable" regardless of capabilities.canEdit, since we are not
+    // touching the original. The user keeps the .elp; we add an .elpx.
+    const canEdit = isLegacyElp ? true : metadata.capabilities?.canEdit !== false;
+    const targetName = isLegacyElp ? convertElpToElpxName(metadata.name) : metadata.name;
+    const parents = Array.isArray(metadata.parents) ? metadata.parents : [];
+
+    let snapshot: OpenedDriveFileSnapshot | null = isLegacyElp
+      ? null
+      : {
+          id: metadata.id,
+          name: metadata.name,
+          modifiedTime: metadata.modifiedTime,
+          version: metadata.version,
+          resourceKey,
+          canEdit,
+        };
+
+    setEditorTitle(root, targetName);
 
     status.set('Loading eXeLearning editor…');
     const editor = new EditorFrame(requiredElement(root, '#editor-host'), {
@@ -87,7 +99,11 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     await editor.load();
     status.set(`Opening ${metadata.name}…`);
     await editor.openFile({ bytes, filename: metadata.name });
-    status.set(canEdit ? `Opened ${metadata.name}.` : `Opened ${metadata.name} in read-only mode.`, canEdit ? 'success' : 'warning');
+    if (isLegacyElp) {
+      status.set(`Opened legacy "${metadata.name}". Saving will create "${targetName}" in the same folder.`, 'warning');
+    } else {
+      status.set(canEdit ? `Opened ${metadata.name}.` : `Opened ${metadata.name} in read-only mode.`, canEdit ? 'success' : 'warning');
+    }
     saveButton.disabled = !canEdit;
     saveButton.addEventListener('click', () => void save());
 
@@ -101,22 +117,46 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
         savingModal.showSaving();
         status.set('Requesting updated .elpx from the editor…');
         const savePayload = await editor.requestSave();
-        status.set('Checking for remote changes…');
-        const saved = await saveDriveFile({
-          token,
-          snapshot,
-          bytes: savePayload.bytes,
-          resolveConflict: () => confirmOverwriteRemoteChange(snapshot.name),
-        });
-        if (!saved) {
-          status.set('Save cancelled.', 'warning');
-          savingModal.hide();
-          return;
+
+        if (snapshot === null) {
+          // Legacy .elp first-save: create a fresh .elpx alongside the
+          // original. After this the snapshot points at the new file and
+          // future saves use the normal update path.
+          status.set(`Creating ${targetName} in Google Drive…`);
+          const created = await createFile({
+            token,
+            name: targetName,
+            bytes: savePayload.bytes,
+            parentId: parents[0],
+          });
+          snapshot = {
+            id: created.id,
+            name: created.name,
+            modifiedTime: created.modifiedTime,
+            version: created.version,
+            canEdit: true,
+          };
+          replaceFileIdInUrl(created.id);
+          setEditorTitle(root, created.name);
+        } else {
+          status.set('Checking for remote changes…');
+          const saved = await saveDriveFile({
+            token,
+            snapshot,
+            bytes: savePayload.bytes,
+            resolveConflict: () => confirmOverwriteRemoteChange(snapshot!.name),
+          });
+          if (!saved) {
+            status.set('Save cancelled.', 'warning');
+            savingModal.hide();
+            return;
+          }
+          snapshot.modifiedTime = saved.modifiedTime;
+          snapshot.version = saved.version;
         }
-        snapshot.modifiedTime = saved.modifiedTime;
-        snapshot.version = saved.version;
+
         dirty = false;
-        status.set(`Saved ${saved.name ?? snapshot.name} to Google Drive.`, 'success');
+        status.set(`Saved ${snapshot.name} to Google Drive.`, 'success');
         savingModal.hide();
         void publishElpxThumbnail({
           token,
@@ -138,6 +178,27 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
       }
     });
   }
+}
+
+/** True for the legacy `.elp` extension, false for `.elpx` and everything else. */
+function isLegacyElpFilename(name: string): boolean {
+  const lower = name.toLowerCase();
+  return lower.endsWith('.elp') && !lower.endsWith('.elpx');
+}
+
+function convertElpToElpxName(name: string): string {
+  return name.replace(/\.elp$/i, '.elpx');
+}
+
+/**
+ * After a legacy `.elp` is converted to `.elpx`, point the address-bar
+ * fileId at the new Drive file so a refresh re-opens what the user just
+ * saved instead of the original `.elp`.
+ */
+function replaceFileIdInUrl(newFileId: string): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set('fileId', newFileId);
+  window.history.replaceState(null, '', url.toString());
 }
 
 /**
