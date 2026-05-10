@@ -99,8 +99,16 @@ export async function buildEditorBootHtml(options: BuildEditorBootHtmlOptions): 
   style.textContent = `${FORCE_HIDE_SELECTORS.join(',\n')} { display: none !important; }`;
   dom.head.append(style);
 
-  // Bridge: forward Ctrl/Cmd+S to the parent. EXELEARNING_READY / DOCUMENT_LOADED
-  // are emitted by the editor itself, so we do not synthesize them here.
+  // Bridge:
+  //   1. Forward Ctrl/Cmd+S to the parent.
+  //   2. Patch the editor's REQUEST_SAVE handler. The v4.0.0 EmbeddingBridge looks
+  //      up project.exportToElpxBlob / project._yjsBridge.exporter.exportToBlob,
+  //      but those methods do not exist in this build (the real export path is
+  //      project.exportToElpxViaYjs → bridge.exportToElpx, which in turn calls
+  //      window.SharedExporters and triggers a browser download instead of
+  //      returning bytes). We replace handleSaveRequest with a version that
+  //      runs SharedExporters directly and posts the bytes back via SAVE_FILE.
+  // EXELEARNING_READY / DOCUMENT_LOADED are still emitted by the editor itself.
   const bridge = dom.createElement('script');
   bridge.textContent = `
 (() => {
@@ -117,6 +125,75 @@ export async function buildEditorBootHtml(options: BuildEditorBootHtmlOptions): 
       send({ type: 'REQUEST_SAVE', requestId: 'gdrive-exelearning-shortcut-' + Date.now() });
     }
   }, true);
+
+  const waitForReady = () => new Promise((resolve) => {
+    const tick = () => {
+      const ready = window.eXeLearning && window.eXeLearning.ready;
+      if (ready && typeof ready.then === 'function') {
+        ready.then(resolve);
+      } else {
+        setTimeout(tick, 50);
+      }
+    };
+    tick();
+  });
+
+  waitForReady().then(() => {
+    const bridge = window.eXeLearning && window.eXeLearning.app && window.eXeLearning.app.embeddingBridge;
+    if (!bridge) {
+      console.warn('[gdrive-exelearning] EmbeddingBridge missing, save will fail.');
+      return;
+    }
+
+    bridge.handleSaveRequest = async function (requestId) {
+      const project = this.app.project;
+      const yjsBridge = project && project._yjsBridge;
+      const documentManager = yjsBridge && yjsBridge.documentManager;
+
+      if (!window.SharedExporters || typeof window.SharedExporters.createExporter !== 'function') {
+        throw new Error('SharedExporters not available');
+      }
+      if (!documentManager) {
+        throw new Error('Project document manager not available');
+      }
+
+      if (typeof documentManager._updateVersionMetadata === 'function') {
+        try { await documentManager._updateVersionMetadata(); } catch (error) { console.warn('[gdrive-exelearning] _updateVersionMetadata failed:', error); }
+      }
+
+      const exporter = window.SharedExporters.createExporter(
+        'elpx',
+        documentManager,
+        yjsBridge.assetCache,
+        yjsBridge.resourceFetcher,
+        yjsBridge.assetManager,
+      );
+
+      const exportOptions = {};
+      if (window.MermaidPreRenderer && typeof window.MermaidPreRenderer.preRender === 'function') {
+        exportOptions.preRenderMermaid = window.MermaidPreRenderer.preRender.bind(window.MermaidPreRenderer);
+      }
+
+      const result = await exporter.export(exportOptions);
+      if (!result || !result.success || !result.data) {
+        throw new Error((result && result.error) || 'SharedExporters returned no data');
+      }
+
+      const data = result.data;
+      const bytes = data instanceof ArrayBuffer
+        ? data
+        : (ArrayBuffer.isView(data) ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) : data);
+      const filename = result.filename || 'project.elpx';
+
+      this.postToParent({
+        type: 'SAVE_FILE',
+        requestId,
+        bytes,
+        filename,
+        size: bytes.byteLength || (data && data.byteLength) || 0,
+      });
+    };
+  });
 })();`;
   dom.body.append(bridge);
 

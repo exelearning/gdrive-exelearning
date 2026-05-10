@@ -236,6 +236,23 @@ reads `window.__EXE_EMBEDDING_CONFIG__` is at
 `public/app/core/RuntimeConfig.js`. When in doubt about message shape or
 lifecycle, read those files in the cloned editor source rather than guessing.
 
+### v4.0.0 REQUEST_SAVE workaround
+
+`EmbeddingBridge.handleSaveRequest` in v4.0.0 looks up
+`project.exportToElpxBlob()` and `project._yjsBridge.exporter.exportToBlob()`,
+but neither method exists in that build — the real export path is
+`project.exportToElpxViaYjs()` → `bridge.exportToElpx()`, and the latter
+performs a browser-side download (`<a download>` click) instead of returning
+bytes. As a result an unpatched bridge throws `Export not available` for any
+`REQUEST_SAVE`.
+
+`editor-boot.ts` patches the bridge instance after `window.eXeLearning.ready`
+resolves: it replaces `handleSaveRequest` with one that runs
+`window.SharedExporters.createExporter('elpx', …)` directly, awaits its
+`export()`, and posts the resulting `ArrayBuffer` back to the parent as
+`SAVE_FILE`. Drop the patch when the upstream editor exposes a proper
+`exportToElpxBlob` / `exportToBytes` API.
+
 ## Route conventions
 
 - `/` is the home page:
