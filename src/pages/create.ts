@@ -1,6 +1,6 @@
 import { requestAccessToken } from '../auth/google-token-client';
 import { BLANK_TEMPLATE_PATH } from '../config';
-import { createFile } from '../drive/drive-api';
+import { createFile, listFiles } from '../drive/drive-api';
 import { parseDriveState, type DriveCreateState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
@@ -65,9 +65,10 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     const editorBytes = await templateResponse.arrayBuffer();
 
     status.set('Creating Google Drive file…');
+    const filename = await pickUntitledFilename(token, createState.folderId);
     const created = await createFile({
       token,
-      name: 'Untitled.elpx',
+      name: filename,
       bytes: driveBytes,
       parentId: createState.folderId,
       fileId: createState.folderId,
@@ -146,6 +147,54 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
       }
     });
   }
+}
+
+const DEFAULT_FILENAME = 'Untitled.elpx';
+const NUMBERED_FILENAME_REGEX = /^Untitled \((\d+)\)\.elpx$/;
+
+/**
+ * Pick a non-colliding filename ("Untitled.elpx", then "Untitled (1).elpx",
+ * "Untitled (2).elpx", …) by listing existing files in the target folder.
+ *
+ * Uses the `drive.file` scope, so this only sees files our app has created or
+ * opened — that is exactly the set we are likely to clash with on repeated
+ * "New" actions, which is what the user cares about. A duplicate of a
+ * `Untitled.elpx` someone else created in the same folder is invisible to us
+ * and harmless because Drive identifies files by id, not by name.
+ */
+async function pickUntitledFilename(token: string, folderId: string | undefined): Promise<string> {
+  const escapedName = DEFAULT_FILENAME.replace(/'/g, "\\'");
+  const queryParts = [
+    "trashed=false",
+    `(name='${escapedName}' or name contains 'Untitled (')`,
+  ];
+  if (folderId) {
+    queryParts.push(`'${folderId.replace(/'/g, "\\'")}' in parents`);
+  }
+  let existing: ReadonlySet<string>;
+  try {
+    const result = await listFiles({ token, query: queryParts.join(' and ') });
+    existing = new Set(result.files.map((file) => file.name));
+  } catch (error) {
+    console.warn('[gdrive-exelearning] Could not list existing Untitled files; using default name:', error);
+    return DEFAULT_FILENAME;
+  }
+
+  if (!existing.has(DEFAULT_FILENAME)) {
+    return DEFAULT_FILENAME;
+  }
+
+  let highest = 0;
+  for (const name of existing) {
+    const match = NUMBERED_FILENAME_REGEX.exec(name);
+    if (match) {
+      const value = Number.parseInt(match[1], 10);
+      if (Number.isFinite(value) && value > highest) {
+        highest = value;
+      }
+    }
+  }
+  return `Untitled (${highest + 1}).elpx`;
 }
 
 /**

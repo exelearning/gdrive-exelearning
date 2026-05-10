@@ -285,6 +285,31 @@ function arrayBufferToUrlSafeBase64(buffer: ArrayBuffer): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+export type ListFilesOptions = {
+  token: string;
+  query: string;
+  fields?: string;
+  pageSize?: number;
+  signal?: AbortSignal;
+};
+
+export async function listFiles(options: ListFilesOptions): Promise<{ files: DriveFileMetadata[] }> {
+  const url = buildDriveUrl(`${DRIVE_API_BASE}/files`, {
+    q: options.query,
+    fields: options.fields ?? 'files(id,name)',
+    pageSize: String(options.pageSize ?? 200),
+    supportsAllDrives: 'true',
+    includeItemsFromAllDrives: 'true',
+  });
+  return parseJsonResponse<{ files: DriveFileMetadata[] }>(
+    await fetch(url, {
+      method: 'GET',
+      headers: buildDriveHeaders({ accessToken: options.token, signal: options.signal }),
+      signal: options.signal,
+    }),
+  );
+}
+
 export async function startResumableUploadSession(
   options: StartResumableUploadOptions,
 ): Promise<string> {
