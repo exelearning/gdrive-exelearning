@@ -6,6 +6,7 @@ import {
   type OpenFileRequestData,
   type SaveFileResponse,
 } from './editor-messages';
+import { resetEditorLocalStorage } from './editor-storage';
 
 type MessageHandler = (message: EditorMessage) => void;
 
@@ -39,6 +40,11 @@ export class EditorFrame {
   }
 
   async load(): Promise<void> {
+    // Drive is the source of truth — purge any Yjs/localStorage residue from
+    // a previous session so /create cannot resurrect the last opened file
+    // before our OPEN_FILE message swaps it for the blank template.
+    await resetEditorLocalStorage();
+
     const ready = this.waitForType('EXELEARNING_READY', 30_000);
     const html = await buildEditorBootHtml({
       parentOrigin: window.location.origin,
