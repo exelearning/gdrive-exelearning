@@ -51,19 +51,8 @@ in the same folder.
 - The app is static and runs entirely in the browser; there is no
   server-side token exchange or backend persistence.
 - There is no collaborative editing.
-- Access tokens live in memory only; there are no refresh tokens, so
-  long-idle tabs may need to re-authorize.
-- Google OAuth origins must exactly match the deployed origin.
-- Drive Picker is not implemented yet and can be added later.
-- Resumable uploads are scaffolded but the first UI flow uses simple
-  uploads.
-- Drive UI integration changes can take time to propagate in Google
-  Drive.
 - Large `.elpx` files are constrained by browser memory and Drive
   upload limits.
-- The full inline preview Drive shows for `.elpx` files is still its
-  zip viewer. The custom thumbnail and mime type help, but only the
-  **Open with → eXeLearning** action gives the rich editor view.
 
 ## Self-hosting
 
