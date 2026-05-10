@@ -11,8 +11,10 @@ if (!root) {
 try {
   const path = normalizeRoute(window.location.pathname);
   if (path === '/open') {
+    document.getElementById('page-footer')?.remove();
     await renderOpen(root);
   } else if (path === '/create') {
+    document.getElementById('page-footer')?.remove();
     await renderCreate(root);
   } else {
     renderHome(root);
