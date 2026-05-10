@@ -113,7 +113,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     await editor.load();
     await editor.openFile({ bytes: editorBytes, filename: created.name });
     saveButton.disabled = false;
-    status.set(`Created ${created.name}.`, 'success');
+    status.set('Created.', 'success');
     saveButton.addEventListener('click', () => void save());
 
     async function save(): Promise<void> {
@@ -137,7 +137,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
         snapshot.modifiedTime = saved.modifiedTime;
         snapshot.version = saved.version;
         dirty = false;
-        status.set(`Saved ${saved.name ?? snapshot.name} to Google Drive.`, 'success');
+        status.set('Saved to Google Drive.', 'success');
         savingModal.hide();
         void publishElpxThumbnail({
           token,

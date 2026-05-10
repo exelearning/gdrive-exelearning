@@ -108,12 +108,12 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     });
 
     await editor.load();
-    status.set(`Opening ${metadata.name}…`);
+    status.set('Opening…');
     await editor.openFile({ bytes, filename: metadata.name });
     if (isLegacyElp) {
-      status.set(`Opened legacy "${metadata.name}". Saving will create "${targetName}" in the same folder.`, 'warning');
+      status.set('Opened legacy file. Saving will create a new .elpx in the same folder.', 'warning');
     } else {
-      status.set(canEdit ? `Opened ${metadata.name}.` : `Opened ${metadata.name} in read-only mode.`, canEdit ? 'success' : 'warning');
+      status.set(canEdit ? 'Opened.' : 'Opened in read-only mode.', canEdit ? 'success' : 'warning');
     }
     saveButton.disabled = !canEdit;
     saveButton.addEventListener('click', () => void save());
@@ -133,7 +133,7 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
           // Legacy .elp first-save: create a fresh .elpx alongside the
           // original. After this the snapshot points at the new file and
           // future saves use the normal update path.
-          status.set(`Creating ${targetName} in Google Drive…`);
+          status.set('Creating in Google Drive…');
           const created = await createFile({
             token,
             name: targetName,
@@ -167,7 +167,7 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
         }
 
         dirty = false;
-        status.set(`Saved ${snapshot.name} to Google Drive.`, 'success');
+        status.set('Saved to Google Drive.', 'success');
         savingModal.hide();
         void publishElpxThumbnail({
           token,
