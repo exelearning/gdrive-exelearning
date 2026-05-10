@@ -1,5 +1,4 @@
 import { requestAccessToken } from '../auth/google-token-client';
-import { BLANK_TEMPLATE_PATH } from '../config';
 import { createFile } from '../drive/drive-api';
 import { parseDriveState, type DriveCreateState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
@@ -8,6 +7,8 @@ import { EditorFrame } from '../editor/editor-frame';
 import { confirmOverwriteRemoteChange, SavingModal } from '../ui/dialogs';
 import { closeEditor, renderEditorPage, requiredElement, setEditorTitle } from '../ui/editor-shell';
 import { formatError, StatusView } from '../ui/status';
+
+const DEFAULT_FILENAME = 'Untitled.elpx';
 
 export async function renderCreate(root: HTMLElement): Promise<void> {
   const params = new URLSearchParams(window.location.search);
@@ -19,6 +20,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   cleanCreateUrl(createState);
 
   renderEditorPage(root, 'Connecting to Google Drive…');
+  setEditorTitle(root, DEFAULT_FILENAME);
   const status = new StatusView(requiredElement(root, '#status'));
   const saveButton = requiredElement(root, '#save-drive') as HTMLButtonElement;
   const openButton = requiredElement(root, '#authorize-open') as HTMLButtonElement;
@@ -30,7 +32,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
 
   openButton.addEventListener('click', () => {
     openButton.disabled = true;
-    void createInDrive('consent').catch((error: unknown) => {
+    void startSession('consent').catch((error: unknown) => {
       openButton.disabled = false;
       status.set(formatError(error), 'error');
     });
@@ -41,50 +43,34 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   async function attemptSilentCreate(): Promise<void> {
     openButton.disabled = true;
     try {
-      await createInDrive('none');
+      await startSession('none');
     } catch {
       openButton.disabled = false;
       status.set('Click "Authorize and create" to continue.');
     }
   }
 
-  async function createInDrive(prompt: 'none' | 'consent'): Promise<void> {
+  /**
+   * Open the editor in a clean, default-empty state. We deliberately do not
+   * pre-create a Drive file or send OPEN_FILE here: shipping a "blank.elpx"
+   * template that holds the editor's "Really Simple Test Project" sample
+   * would surface that sample to the user every time they hit New. Instead,
+   * the Drive file is created on the first save with whatever the editor
+   * exports — which the editor itself bootstraps as an empty document.
+   */
+  async function startSession(prompt: 'none' | 'consent'): Promise<void> {
     status.set('Requesting Google authorization…');
     const token = await requestAccessToken({ prompt, interactive: prompt === 'consent' });
     openButton.hidden = true;
-
-    status.set('Loading blank .elpx template…');
-    const templateResponse = await fetch(BLANK_TEMPLATE_PATH);
-    if (!templateResponse.ok) {
-      throw new Error(`Blank template is missing at ${BLANK_TEMPLATE_PATH}.`);
-    }
-    const bytes = await templateResponse.arrayBuffer();
-
-    status.set('Creating Google Drive file…');
-    const created = await createFile({
-      token,
-      name: 'Untitled.elpx',
-      bytes,
-      parentId: createState.folderId,
-      fileId: createState.folderId,
-      resourceKey: createState.folderResourceKey,
-    });
-
-    const snapshot: OpenedDriveFileSnapshot = {
-      id: created.id,
-      name: created.name,
-      modifiedTime: created.modifiedTime,
-      version: created.version,
-      canEdit: true,
-    };
-    setEditorTitle(root, created.name);
 
     status.set('Loading eXeLearning editor…');
     const editor = new EditorFrame(requiredElement(root, '#editor-host'), {
       hideUI: { fileMenu: true, saveButton: true, userMenu: true },
     });
+    let dirty = false;
     editor.onMessage((message) => {
       if (message.type === 'EXELEARNING_EVENT' && (message as { event?: string }).event === 'PROJECT_DIRTY') {
+        dirty = true;
         status.set('Unsaved changes.', 'warning');
       }
       if (message.type === 'REQUEST_SAVE') {
@@ -93,31 +79,57 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     });
 
     await editor.load();
-    await editor.openFile({ bytes, filename: created.name });
     saveButton.disabled = false;
-    status.set(`Created ${created.name}.`, 'success');
+    status.set('Edit your new file and click "Save to Drive" when you are ready.');
     saveButton.addEventListener('click', () => void save());
+
+    let snapshot: OpenedDriveFileSnapshot | null = null;
 
     async function save(): Promise<void> {
       try {
         saveButton.disabled = true;
         savingModal.showSaving();
-        status.set('Requesting updated .elpx from the editor…');
+        status.set('Requesting .elpx from the editor…');
         const savePayload = await editor.requestSave();
-        const saved = await saveDriveFile({
-          token,
-          snapshot,
-          bytes: savePayload.bytes,
-          resolveConflict: () => confirmOverwriteRemoteChange(snapshot.name),
-        });
-        if (!saved) {
-          status.set('Save cancelled.', 'warning');
-          savingModal.hide();
-          return;
+        const filename = savePayload.filename ?? DEFAULT_FILENAME;
+
+        if (!snapshot) {
+          status.set('Creating Google Drive file…');
+          const created = await createFile({
+            token,
+            name: filename,
+            bytes: savePayload.bytes,
+            parentId: createState.folderId,
+            fileId: createState.folderId,
+            resourceKey: createState.folderResourceKey,
+          });
+          snapshot = {
+            id: created.id,
+            name: created.name,
+            modifiedTime: created.modifiedTime,
+            version: created.version,
+            canEdit: true,
+          };
+          setEditorTitle(root, created.name);
+        } else {
+          status.set('Checking for remote changes…');
+          const saved = await saveDriveFile({
+            token,
+            snapshot,
+            bytes: savePayload.bytes,
+            resolveConflict: () => confirmOverwriteRemoteChange(snapshot!.name),
+          });
+          if (!saved) {
+            status.set('Save cancelled.', 'warning');
+            savingModal.hide();
+            return;
+          }
+          snapshot.modifiedTime = saved.modifiedTime;
+          snapshot.version = saved.version;
         }
-        snapshot.modifiedTime = saved.modifiedTime;
-        snapshot.version = saved.version;
-        status.set(`Saved ${saved.name ?? snapshot.name} to Google Drive.`, 'success');
+
+        dirty = false;
+        status.set(`Saved ${snapshot.name} to Google Drive.`, 'success');
         savingModal.hide();
         void publishElpxThumbnail({
           token,
@@ -131,6 +143,12 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
         saveButton.disabled = false;
       }
     }
+
+    window.addEventListener('beforeunload', (event) => {
+      if (dirty) {
+        event.preventDefault();
+      }
+    });
   }
 }
 
