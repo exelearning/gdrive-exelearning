@@ -122,6 +122,39 @@ export function hasRemoteRevisionChanged(
   return false;
 }
 
+/**
+ * Reconstruct a {@link DriveState} from the current page query string.
+ *
+ * Drive sends `?state=<JSON>` on the very first navigation, but {@link
+ * cleanOpenUrl} / {@link cleanCreateUrl} rewrite that to a compact
+ * `?fileId=…&userId=…` (open) or `?folderId=…&userId=…` (create) so the
+ * address bar stays readable. A page refresh after that point would
+ * otherwise lose the state entirely; we treat the compact form as a
+ * lossy round-trip of the original instead.
+ */
+export function parseDriveStateFromParams(
+  params: URLSearchParams,
+  expectedAction: 'open' | 'create',
+): DriveState {
+  const rawState = params.get('state');
+  if (rawState) {
+    return parseDriveState(rawState);
+  }
+
+  const userId = params.get('userId') ?? undefined;
+  if (expectedAction === 'open') {
+    const fileId = params.get('fileId');
+    if (fileId) {
+      return { action: 'open', ids: [fileId], userId };
+    }
+  } else {
+    const folderId = params.get('folderId') ?? undefined;
+    return { action: 'create', folderId, userId };
+  }
+
+  throw new Error('Missing Google Drive state.');
+}
+
 export function parseDriveState(rawState: string | null): DriveState {
   if (!rawState) {
     throw new Error('Missing Google Drive state.');

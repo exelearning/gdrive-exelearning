@@ -1,7 +1,11 @@
 import { requestAccessToken } from '../auth/google-token-client';
 import { BLANK_TEMPLATE_PATH } from '../config';
 import { createFile, listFiles } from '../drive/drive-api';
-import { parseDriveState, type DriveCreateState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
+import {
+  parseDriveStateFromParams,
+  type DriveCreateState,
+  type OpenedDriveFileSnapshot,
+} from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
@@ -11,7 +15,7 @@ import { formatError, StatusView } from '../ui/status';
 
 export async function renderCreate(root: HTMLElement): Promise<void> {
   const params = new URLSearchParams(window.location.search);
-  const state = parseDriveState(params.get('state'));
+  const state = parseDriveStateFromParams(params, 'create');
   if (state.action !== 'create') {
     throw new Error('This endpoint only supports Google Drive create actions.');
   }
@@ -43,6 +47,13 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     try {
       await createInDrive('none');
     } catch {
+      // The interactive (consent) flow may have already succeeded — and
+      // hidden the button — while the silent attempt was still in flight.
+      // In that case we must not stomp the success message with the
+      // "Click 'Authorize and create' to continue." prompt.
+      if (openButton.hidden) {
+        return;
+      }
       openButton.disabled = false;
       status.set('Click "Authorize and create" to continue.');
     }

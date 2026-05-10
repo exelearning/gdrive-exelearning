@@ -1,7 +1,11 @@
 import { requestAccessToken } from '../auth/google-token-client';
 import { createFile } from '../drive/drive-api';
 import { fetchEditableDriveFile } from '../drive/drive-download';
-import { parseDriveState, type DriveOpenState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
+import {
+  parseDriveStateFromParams,
+  type DriveOpenState,
+  type OpenedDriveFileSnapshot,
+} from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
@@ -11,7 +15,7 @@ import { formatError, StatusView } from '../ui/status';
 
 export async function renderOpen(root: HTMLElement): Promise<void> {
   const params = new URLSearchParams(window.location.search);
-  const state = parseDriveState(params.get('state'));
+  const state = parseDriveStateFromParams(params, 'open');
   if (state.action !== 'open') {
     throw new Error('This endpoint only supports Google Drive open actions.');
   }
@@ -47,6 +51,13 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     try {
       await openFromDrive('none');
     } catch {
+      // The interactive (consent) flow may have already succeeded — and
+      // hidden the button — while the silent attempt was still in flight.
+      // In that case we must not stomp the success message with the
+      // "Click 'Authorize and open' to continue." prompt.
+      if (openButton.hidden) {
+        return;
+      }
       openButton.disabled = false;
       status.set('Click "Authorize and open" to continue.');
     }
