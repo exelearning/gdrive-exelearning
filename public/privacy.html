@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — gdrive-exelearning</title>
+    <link rel="icon" type="image/svg+xml" href="./icons/exelearning.svg" />
+    <meta name="description" content="Privacy Policy for gdrive-exelearning, a free open-source web application that lets you open, edit, and save eXeLearning .elpx files stored in Google Drive." />
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        --bg: #fafbfc;
+        --fg: #1f2328;
+        --muted: #57606a;
+        --border: #d0d7de;
+        --accent: #1a73e8;
+        --surface: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #e6edf3;
+          --muted: #8d96a0;
+          --border: #30363d;
+          --accent: #58a6ff;
+          --surface: #161b22;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--fg); }
+      main { max-width: 760px; margin: 2rem auto; padding: 1.5rem; }
+      header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+      header img { width: 40px; height: 40px; }
+      h1 { font-size: 1.6rem; margin: 0; }
+      h2 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+      p, ul { margin: 0.5rem 0; }
+      ul { padding-left: 1.25rem; }
+      a { color: var(--accent); }
+      .meta { color: var(--muted); font-size: 0.9rem; margin-top: -0.25rem; }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-top: 1.5rem;
+      }
+      footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      code { background: var(--surface); padding: 0.05rem 0.3rem; border-radius: 4px; border: 1px solid var(--border); font-size: 0.9em; }
+      table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.95rem; }
+      th, td { text-align: left; padding: 0.5rem 0.75rem; border: 1px solid var(--border); vertical-align: top; }
+      th { background: var(--surface); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="./icons/exelearning.svg" alt="" />
+        <div>
+          <h1>Privacy Policy</h1>
+          <p class="meta">gdrive-exelearning · Last updated: 2026-05-10</p>
+        </div>
+      </header>
+
+      <p>
+        This Privacy Policy explains how <strong>gdrive-exelearning</strong> handles personal
+        data and content when you use the application. The application is a free open-source
+        web tool published by the
+        <a href="https://exelearning.net/" target="_blank" rel="noopener noreferrer">eXeLearning</a> project,
+        distributed under the GNU Affero General Public License v3.0 or later (AGPL-3.0+).
+      </p>
+
+      <h2>1. Summary in plain language</h2>
+      <ul>
+        <li>The application runs entirely in your browser. We do not operate any backend server that receives your content.</li>
+        <li>We do not collect analytics, telemetry, or tracking data.</li>
+        <li>We do not use cookies for tracking. The only browser storage used is whatever the Google Identity Services library temporarily stores during the OAuth flow.</li>
+        <li>Your <code>.elpx</code> files stay in your own Google Drive.</li>
+        <li>You can revoke access at any time at
+          <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a>.</li>
+      </ul>
+
+      <h2>2. Data the application processes</h2>
+      <p>
+        The application processes only the minimum data required to let you open and save your
+        eXeLearning files:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Source</th>
+            <th>Where it lives</th>
+            <th>Retention</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Google account identifier (email, name, profile picture)</td>
+            <td>Google Identity Services after you sign in</td>
+            <td>In the memory of your browser tab</td>
+            <td>Discarded when the tab closes</td>
+          </tr>
+          <tr>
+            <td>OAuth access tokens</td>
+            <td>Issued by Google to call the Drive API on your behalf</td>
+            <td>In the memory of your browser tab</td>
+            <td>Expires after ~1 hour, never persisted on disk</td>
+          </tr>
+          <tr>
+            <td>The <code>.elpx</code> files you choose to open</td>
+            <td>Your Google Drive (via Drive API, <code>drive.file</code> scope)</td>
+            <td>Read into your browser memory while you edit</td>
+            <td>Saved back to your own Drive when you save; never copied elsewhere</td>
+          </tr>
+          <tr>
+            <td>HTTP server logs of GitHub Pages</td>
+            <td>Generated automatically by GitHub when serving the static site</td>
+            <td>GitHub infrastructure</td>
+            <td>Governed by the
+              <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. What we do NOT do</h2>
+      <ul>
+        <li>We do not transmit your <code>.elpx</code> content or Drive metadata to any server controlled by the eXeLearning project.</li>
+        <li>We do not store refresh tokens. Each session uses a short-lived access token issued by Google.</li>
+        <li>We do not run analytics, tracking pixels, or third-party advertising scripts.</li>
+        <li>We do not sell, share, or otherwise disclose your personal data to third parties.</li>
+        <li>We do not access any file in your Drive that you have not explicitly opened or created with the application (<code>drive.file</code> scope).</li>
+      </ul>
+
+      <h2>4. Google API user data</h2>
+      <p>
+        The application&rsquo;s use of information received from Google APIs adheres to the
+        <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>,
+        including the Limited Use requirements. Specifically:
+      </p>
+      <ul>
+        <li>Data accessed via the Drive API is used only to provide the user-facing functionality of opening, editing, and saving <code>.elpx</code> files.</li>
+        <li>Data is never used to develop, improve, or train generalized or non-personalized AI/ML models.</li>
+        <li>Data is not transferred to any third party for purposes unrelated to the user-facing features the user requested.</li>
+        <li>Data is not used or transferred for purposes such as advertising or credit-worthiness.</li>
+        <li>Humans do not read your data unless you explicitly grant permission for a specific support request.</li>
+      </ul>
+
+      <h2>5. Hosting</h2>
+      <p>
+        The application is served as static files from
+        <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+        GitHub may collect standard HTTP server log information (such as IP address and user agent)
+        when you load the page. Their handling of that data is governed by the
+        <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a>.
+        The eXeLearning project does not have access to those logs.
+      </p>
+
+      <h2>6. Your rights</h2>
+      <p>
+        Because the application does not store your personal data on any infrastructure
+        operated by the eXeLearning project, there is no central record to access, rectify,
+        export, or delete on our side. To exercise data-subject rights:
+      </p>
+      <ul>
+        <li><strong>Revoke access</strong> at
+          <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a>.
+          This immediately stops the application from accessing your Drive on your behalf.</li>
+        <li><strong>Manage data held by Google</strong> through your
+          <a href="https://myaccount.google.com/data-and-privacy" target="_blank" rel="noopener noreferrer">Google Account data &amp; privacy</a>
+          settings.</li>
+        <li><strong>Contact us</strong> via the
+          <a href="https://github.com/exelearning/gdrive-exelearning/issues" target="_blank" rel="noopener noreferrer">project issue tracker</a>
+          for any privacy-related question.</li>
+      </ul>
+
+      <h2>7. Children and educational use</h2>
+      <p>
+        gdrive-exelearning is intended for use by educators and learners. The application
+        itself does not request, collect, or process information about children separately
+        from the Google account used to sign in. When the application is deployed in an
+        educational setting that involves minors, the educational institution remains the
+        data controller and is responsible for any consent, parental notification, and
+        record-keeping required by applicable laws (such as GDPR or COPPA).
+      </p>
+
+      <h2>8. Security</h2>
+      <p>
+        The application uses HTTPS to transport data between your browser and Google&rsquo;s
+        APIs. OAuth access tokens are kept only in browser memory and are never written to
+        disk by the application. Source code and security-relevant changes are public and
+        auditable in the
+        <a href="https://github.com/exelearning/gdrive-exelearning" target="_blank" rel="noopener noreferrer">project repository</a>.
+        Security disclosures may be opened privately via the
+        <a href="https://github.com/exelearning/gdrive-exelearning/security/advisories" target="_blank" rel="noopener noreferrer">GitHub security advisories</a>
+        page.
+      </p>
+
+      <h2>9. Changes to this Policy</h2>
+      <p>
+        This Privacy Policy may be updated from time to time. The &ldquo;Last updated&rdquo;
+        date at the top reflects the most recent revision. Material changes will be
+        highlighted in the project changelog.
+      </p>
+
+      <h2>10. Contact</h2>
+      <p>
+        For privacy questions or data-subject requests, please open an issue at
+        <a href="https://github.com/exelearning/gdrive-exelearning/issues" target="_blank" rel="noopener noreferrer">github.com/exelearning/gdrive-exelearning/issues</a>
+        or reach the maintainers through the
+        <a href="https://exelearning.net/" target="_blank" rel="noopener noreferrer">eXeLearning project website</a>.
+      </p>
+
+      <div class="panel">
+        <p style="margin:0;">
+          By using gdrive-exelearning you confirm that you have read this Privacy Policy and
+          understand how your data is processed.
+        </p>
+      </div>
+
+      <footer>
+        gdrive-exelearning · Open source under
+        <a href="https://github.com/exelearning/gdrive-exelearning/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0+</a>
+        · <a href="./terms.html">Terms of Service</a>
+        · <a href="./">Back to application</a>
+      </footer>
+    </main>
+  </body>
+</html>
