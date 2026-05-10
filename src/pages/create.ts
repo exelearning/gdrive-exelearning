@@ -2,6 +2,7 @@ import { requestAccessToken } from '../auth/google-token-client';
 import { BLANK_TEMPLATE_PATH } from '../config';
 import { createFile } from '../drive/drive-api';
 import { parseDriveState, type DriveCreateState, type OpenedDriveFileSnapshot } from '../drive/drive-state';
+import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
 import { confirmOverwriteRemoteChange, SavingModal } from '../ui/dialogs';
@@ -118,6 +119,11 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
         snapshot.version = saved.version;
         status.set(`Saved ${saved.name ?? snapshot.name} to Google Drive.`, 'success');
         savingModal.hide();
+        void publishElpxThumbnail({
+          token,
+          fileId: snapshot.id,
+          bytes: savePayload.bytes,
+        });
       } catch (error) {
         savingModal.showError(formatError(error));
         status.set(formatError(error), 'error');

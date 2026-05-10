@@ -7,6 +7,14 @@ These are natural-language guidelines for agents to follow when developing the `
 ## Project conventions
 
 - This project is a **static Vite + TypeScript web app**. Do not add a backend, server-side session storage, server-side secrets, or refresh-token flow.
+- The "treat `.elpx` as binary, do not unzip" rule has **one** narrow
+  exception: extracting `screenshot.png` after a successful save in order to
+  push it as a Drive thumbnail (`contentHints.thumbnail`). The dedicated
+  `src/elpx/zip-extract.ts` reader only walks the central directory and
+  decompresses a single named entry — it never reads `content.xml`,
+  `content.dtd`, anything inside `idevices/`, or any HTML. Do not extend its
+  use to other entries; if a future feature needs more, ask the maintainer
+  before relaxing the rule further.
 - The app is published at:
   ```text
   https://exelearning.github.io/gdrive-exelearning/

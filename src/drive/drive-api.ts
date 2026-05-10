@@ -219,6 +219,72 @@ export async function createFile(
   );
 }
 
+export type UpdateFileMetadataOptions = {
+  token: string;
+  fileId: string;
+  resourceKey?: string;
+  mimeType?: string;
+  thumbnail?: {
+    bytes: ArrayBuffer;
+    mimeType: string;
+  };
+  signal?: AbortSignal;
+};
+
+/**
+ * Update Drive metadata (mimeType, contentHints.thumbnail). Used after a save
+ * to push the editor-generated screenshot.png as a Drive thumbnail and to
+ * give the file a custom mimeType so Drive does not auto-open its zip viewer.
+ */
+export async function updateFileMetadata(
+  options: UpdateFileMetadataOptions,
+): Promise<DriveFileMetadata> {
+  const body: Record<string, unknown> = {};
+  if (options.mimeType) {
+    body.mimeType = options.mimeType;
+  }
+  if (options.thumbnail) {
+    body.contentHints = {
+      thumbnail: {
+        image: arrayBufferToUrlSafeBase64(options.thumbnail.bytes),
+        mimeType: options.thumbnail.mimeType,
+      },
+    };
+  }
+  if (Object.keys(body).length === 0) {
+    throw new Error('updateFileMetadata called without any fields to update.');
+  }
+
+  const url = buildDriveUrl(`${DRIVE_API_BASE}/files/${encodeURIComponent(options.fileId)}`, {
+    fields: 'id,name,mimeType,modifiedTime,version,thumbnailLink',
+    supportsAllDrives: 'true',
+  });
+  const headers = buildDriveHeaders({
+    accessToken: options.token,
+    resourceKeys: options.resourceKey ? [{ fileId: options.fileId, resourceKey: options.resourceKey }] : undefined,
+    signal: options.signal,
+  });
+  headers.set('Content-Type', 'application/json; charset=UTF-8');
+
+  return parseJsonResponse<DriveFileMetadata>(
+    await fetch(url, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(body),
+      signal: options.signal,
+    }),
+  );
+}
+
+function arrayBufferToUrlSafeBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 export async function startResumableUploadSession(
   options: StartResumableUploadOptions,
 ): Promise<string> {
