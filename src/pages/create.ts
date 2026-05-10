@@ -163,18 +163,24 @@ const NUMBERED_FILENAME_REGEX = /^Untitled \((\d+)\)\.elpx$/;
  * and harmless because Drive identifies files by id, not by name.
  */
 async function pickUntitledFilename(token: string, folderId: string | undefined): Promise<string> {
-  const escapedName = DEFAULT_FILENAME.replace(/'/g, "\\'");
-  const queryParts = [
-    "trashed=false",
-    `(name='${escapedName}' or name contains 'Untitled (')`,
-  ];
+  // Use a permissive `name contains 'Untitled'` query and do the precise
+  // matching client-side: building a `name contains 'Untitled ('` literal
+  // works against Drive but is fragile across API versions, and the cost of
+  // pulling a few extra rows we discard locally is negligible.
+  const queryParts = ["trashed=false", "name contains 'Untitled'"];
   if (folderId) {
     queryParts.push(`'${folderId.replace(/'/g, "\\'")}' in parents`);
   }
-  let existing: ReadonlySet<string>;
+
+  const existing = new Set<string>();
   try {
     const result = await listFiles({ token, query: queryParts.join(' and ') });
-    existing = new Set(result.files.map((file) => file.name));
+    for (const file of result.files) {
+      if (typeof file.name === 'string') {
+        existing.add(file.name);
+      }
+    }
+    console.log('[gdrive-exelearning] Existing Untitled files in folder:', [...existing]);
   } catch (error) {
     console.warn('[gdrive-exelearning] Could not list existing Untitled files; using default name:', error);
     return DEFAULT_FILENAME;
