@@ -1,176 +1,116 @@
 # gdrive-exelearning
 
-Static Vite TypeScript app for opening, editing, and saving eXeLearning
-`.elpx` projects from Google Drive. The app is intended to be hosted as a
-Google Drive UI integration: Drive launches the app with file metadata in the
-URL, the app asks the user to authorize Drive access, and the bundled
-eXeLearning editor handles the project content in the browser.
+[![Deploy to GitHub Pages](https://github.com/exelearning/gdrive-exelearning/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/exelearning/gdrive-exelearning/actions/workflows/deploy.yml)
+![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)
+![Last Commit](https://img.shields.io/github/last-commit/exelearning/gdrive-exelearning)
+![Open Issues](https://img.shields.io/github/issues/exelearning/gdrive-exelearning)
 
-## Local Development
+Edit eXeLearning `.elpx` (and legacy `.elp`) projects directly from Google
+Drive. The bundled static editor opens in the browser, the file stays in
+your Drive — there is no backend, no server-side storage, and no refresh
+tokens.
 
-Install the Node dependencies first:
+Live deploy: <https://exelearning.github.io/gdrive-exelearning/>
+
+## Features
+
+- **Open with eXeLearning** from Google Drive opens the project in an
+  embedded eXeLearning editor and saves the result back to the same
+  Drive file.
+- **Create new projects** straight from Drive's "New" menu — the file
+  appears in the chosen folder with a unique `Untitled.elpx` /
+  `Untitled (N).elpx` name.
+- **Legacy `.elp` upgrade**: opening a v2 `.elp` project loads it
+  read-only in the editor and the next save creates a fresh `.elpx`
+  next to the original (the legacy file is left untouched).
+- **Drive thumbnails**: after every save we publish the editor's
+  generated `screenshot.png` as the file's Drive thumbnail.
+- **Conflict detection**: if Drive changed the file between open and
+  save, the user is offered "overwrite", "save as copy" or "cancel".
+- **Read-only fallback**: if Drive reports `canEdit=false`, the editor
+  opens with the save button disabled.
+
+## Usage
+
+After enabling the Drive UI integration on your Google Cloud project
+(see below), an end user opens a `.elpx` (or `.elp`) in Drive:
+
+1. Right-click → **Open with → eXeLearning**.
+2. The first time, click **Authorize and open**; subsequent visits go
+   straight to the editor.
+3. Edit the project. Use the **Save to Drive** button (or `Ctrl/Cmd+S`).
+4. Drive metadata (`modifiedTime`, thumbnail, custom mime type) is
+   updated to reflect the new content.
+
+To create a new project, pick **New → eXeLearning** from any Drive
+folder; the editor opens with a blank document and the file is created
+in the same folder.
+
+## Google Cloud setup
+
+1. Create or pick a Google Cloud project and enable the **Google Drive
+   API**.
+2. Configure the **OAuth consent screen**:
+   - User type: **External**, Publishing status: **In production**.
+   - Required scopes: `https://www.googleapis.com/auth/drive.file` and
+     `https://www.googleapis.com/auth/drive.install`. Both are
+     non-sensitive, so no Google verification is required.
+   - Authorized domain: your deploy origin (for the public deploy:
+     `exelearning.github.io`).
+   - Add a Privacy Policy URL and Terms of Service URL — Google
+     requires both before flipping consent to production.
+3. Create an **OAuth 2.0 Client ID** (Web application). Add the deploy
+   origin to **Authorized JavaScript origins**.
+4. In the Drive API console, configure **Drive UI integration**:
+   - **Open URL**: `https://<origin>/gdrive-exelearning/open`
+   - **New URL**: `https://<origin>/gdrive-exelearning/create`
+   - **Default file extension**: `elpx`
+   - **Secondary file extensions**: `elp`
+   - **MIME types**: `application/octet-stream`,
+     `application/vnd.exelearning.elpx`, `application/zip`.
+5. Copy the OAuth client ID into the build environment as
+   `VITE_GOOGLE_CLIENT_ID` (and optionally `VITE_GOOGLE_API_KEY`). For
+   the official deploy, the GitHub Pages workflow reads them from
+   repository secrets.
+
+## Self-hosting
+
+The app is a static site; any host that serves `dist/` works. The
+default GitHub Actions workflow deploys to GitHub Pages on every push
+to `main`.
 
 ```sh
+git clone https://github.com/exelearning/gdrive-exelearning.git
+cd gdrive-exelearning
 npm ci
-```
-
-Create a local environment file:
-
-```sh
-cp .env.example .env.local
-```
-
-Fill in the Google OAuth client ID and app origin values in `.env.local`, then
-download the editor build and start Vite:
-
-```sh
-make download-editor
-make dev
-```
-
-Useful targets:
-
-```sh
-make lint
-make typecheck
-make build
-```
-
-## Install or Download the Editor
-
-The Vite app expects a static eXeLearning editor bundle under
-`public/editor/`. The default `make download-editor` target downloads a zip
-archive and extracts it there:
-
-```sh
-make download-editor
-```
-
-By default the Makefile downloads:
-
-```sh
-https://github.com/exelearning/exelearning/releases/download/v4.0.0/exelearning-static-v4.0.0.zip
-```
-
-Override the release or URL when needed:
-
-```sh
-EXELEARNING_EDITOR_REF=v4.0.1 make download-editor
-EDITOR_ZIP_URL=https://example.com/exelearning-static.zip make download-editor
-```
-
-If the zip contains a single top-level directory, its contents are flattened
-into `public/editor/`. If the zip already contains the editor files at the
-root, those files are copied directly.
-
-## Build the Editor From Source
-
-Use these variables to point the Makefile at the upstream editor repository:
-
-```sh
-EXELEARNING_EDITOR_REPO_URL=https://github.com/exelearning/exelearning.git
-EXELEARNING_EDITOR_REF=v4.0.0
-EXELEARNING_EDITOR_REF_TYPE=tag
-EDITOR_SOURCE_DIR=exelearning
-EDITOR_OUTPUT_DIR=public/editor
-```
-
-Build and install the static editor output:
-
-```sh
-make build-editor
-```
-
-`build-editor` removes the old editor output, shallow-clones the selected
-eXeLearning ref, runs `bun install`, and then runs:
-
-```sh
-OUTPUT_DIR=public/editor bun run build:static
-```
-
-`EXELEARNING_EDITOR_REF_TYPE` supports `branch`, `tag`, or `commit`.
-
-## Google Cloud Setup
-
-Create or choose a Google Cloud project, then configure it for Drive access.
-
-1. Enable **Google Drive API** in **APIs & Services > Library**.
-2. Configure the **OAuth consent screen**. Add the app name, support email,
-   developer contact, and test users while the app is in testing mode.
-3. Create an **OAuth client ID** in **APIs & Services > Credentials**.
-   Choose **Web application**.
-4. Add authorized JavaScript origins for every deployed origin, for example:
-
-```text
-http://localhost:5173
-https://YOUR_GITHUB_USER.github.io
-```
-
-For Google Drive UI integration, open the Drive API configuration for the app
-and add Drive UI URLs:
-
-```text
-Open URL: https://exelearning.github.io/gdrive-exelearning/open
-New URL:  https://exelearning.github.io/gdrive-exelearning/create
-```
-
-Set the default file extension to:
-
-```text
-elpx
-```
-
-If you also want to open legacy v2 projects from Drive, add `elp` to the
-list of accepted extensions in the Drive UI integration. When the user
-saves an `.elp` opened this way, the app uploads a freshly exported
-`.elpx` next to the original (the legacy file is left untouched).
-
-Use these scopes:
-
-```text
-https://www.googleapis.com/auth/drive.file
-https://www.googleapis.com/auth/drive.install
-```
-
-Store the OAuth client ID in environment variables rather than source code:
-
-```sh
-VITE_GOOGLE_CLIENT_ID=...
-VITE_GOOGLE_API_KEY=...
-```
-
-## Deploy
-
-The included GitHub Actions workflow deploys to GitHub Pages on pushes to
-`main`.
-
-Before enabling it:
-
-1. Add the static app package files and commit them.
-2. Configure GitHub Pages to use **GitHub Actions** as the source.
-3. Add any required Vite environment variables as repository variables or
-   secrets.
-4. Set `EDITOR_ZIP_URL` as a repository variable only if you need to override
-   the default eXeLearning release URL.
-
-The workflow runs:
-
-```sh
-npm ci
-make download-editor
+make download-editor   # fetches the latest exelearning release
 npm run build
 ```
 
-Then it uploads and deploys the generated `dist/` directory.
+`make download-editor` always tracks the **latest** GitHub release of
+[`exelearning/exelearning`](https://github.com/exelearning/exelearning/releases).
+Pin a specific version with `EXELEARNING_EDITOR_REF=vX.Y.Z`.
+
+To build the editor from source instead of a release ZIP:
+
+```sh
+make build-editor                          # latest release (default)
+EXELEARNING_EDITOR_REF=main \
+  EXELEARNING_EDITOR_REF_TYPE=branch \
+  make build-editor                         # bleeding-edge
+```
 
 ## Limitations
 
-- The app is static and runs entirely in the browser; there is no server-side
-  token exchange or backend persistence.
-- There is no collaborative editing.
-- Access tokens live in memory only; there are no refresh tokens.
-- Google OAuth origins must exactly match the deployed origin.
-- Drive Picker is not implemented yet and can be added later.
-- Resumable uploads are scaffolded but the first UI flow uses simple uploads.
-- Drive UI integration changes can take time to propagate in Google Drive.
-- Large `.elpx` files are constrained by browser memory and Drive upload limits.
+- No collaborative editing — each user sees their own Drive.
+- Access tokens live in memory only; there are no refresh tokens, so
+  long-idle tabs may need to re-authorize.
+- The full inline preview Drive shows for `.elpx` files is still its
+  zip viewer. The custom thumbnail and mime type help, but only the
+  **Open with → eXeLearning** action gives the rich editor view.
+
+## Contributing
+
+See [`AGENTS.md`](AGENTS.md) for the protocol details (postMessage
+shape, hideUI, srcdoc/`<base>` trick, the `REQUEST_SAVE` patch for
+v4.0.0). PRs welcome.
