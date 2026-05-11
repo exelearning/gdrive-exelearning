@@ -2,7 +2,8 @@ import { authorizeGoogle } from '../auth/google-token-client';
 import { APP_BASE_URL, EDITOR_INDEX_PATH, GOOGLE_CLIENT_ID } from '../config';
 
 const DRIVE_URL = 'https://drive.google.com/drive/my-drive';
-const LOGO_SRC = `${APP_BASE_URL}icons/exelearning.svg`;
+const LOGO_SRC =
+  'https://raw.githubusercontent.com/exelearning/exelearning/main/public/images/logo.svg';
 
 const AUTHORIZE_ICON = `
   <svg width="14" height="14" viewBox="0 0 48 48" aria-hidden="true">
@@ -34,10 +35,8 @@ export function renderHome(root: HTMLElement): void {
           <span class="nav-pill">Google Drive add-on</span>
         </div>
         <div class="nav-right">
-          <a href="#how">How it works</a>
-          <a href="#authorize">Get started</a>
           <a href="https://exelearning.net" target="_blank" rel="noopener">eXeLearning.net</a>
-          <a href="#authorize" class="cta">Open app</a>
+          <a href="#start" class="cta">Get started</a>
         </div>
       </header>
 
@@ -55,17 +54,7 @@ export function renderHome(root: HTMLElement): void {
             Free · Open source · Runs in your browser
           </span>
           <h1>Edit your <span class="accent">eXeLearning</span> resources, right inside <span class="accent-orange">Google Drive</span>.</h1>
-          <p class="hero-sub">Open, edit and save your <strong>.elpx</strong> files without leaving Drive. Authorize once and your interactive learning resources are a click away — no installs, no uploads.</p>
-          <div class="hero-actions">
-            <a href="#authorize" class="btn btn-primary">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.75a3.25 3.25 0 0 1 3.25 3.25v2H8.75V8A3.25 3.25 0 0 1 12 4.75ZM6.75 8v2H6a1.5 1.5 0 0 0-1.5 1.5v7A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 18 10h-.75V8a5.25 5.25 0 1 0-10.5 0Z"/></svg>
-              Authorize with Google
-            </a>
-            <a href="https://github.com/exelearning/gdrive-exelearning" target="_blank" rel="noopener" class="btn btn-ghost">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.97.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.13v3.16c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
-              View on GitHub
-            </a>
-          </div>
+          <p class="hero-sub">Open, edit and save <strong>.elpx</strong> files without leaving Drive. Authorize once — no installs, no uploads.</p>
           <div class="hero-meta">
             <span><span class="check">✓</span> Works with .elpx files</span>
             <span><span class="check">✓</span> Files stay in your Drive</span>
@@ -79,25 +68,6 @@ export function renderHome(root: HTMLElement): void {
             <span class="dot" style="background:#f5bf3f"></span>
             <span class="dot" style="background:#62c554"></span>
             <span class="url">drive.google.com/drive/my-drive</span>
-          </div>
-          <div class="mock-toolbar">
-            <span class="mock-newbtn">
-              <span class="plus">
-                <svg width="18" height="18" viewBox="0 0 36 36">
-                  <path fill="#34a853" d="M16 16v14h4V20z"/>
-                  <path fill="#4285f4" d="M30 16H20l-4 4h14z"/>
-                  <path fill="#fbbc04" d="M6 16l4 4 4-4-4-4z"/>
-                  <path fill="#ea4335" d="M20 16V6h-4v14z"/>
-                  <path fill="#188038" d="M20 16l-4 4h4z"/>
-                  <path fill="#1967d2" d="M16 20l4-4h-4z"/>
-                </svg>
-              </span>
-              New
-            </span>
-            <span class="mock-search">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.5" y2="15.5"/></svg>
-              Search in Drive
-            </span>
           </div>
           <div class="mock-body">
             <p class="mock-section-title">Suggested · eXeLearning files</p>
@@ -122,62 +92,11 @@ export function renderHome(root: HTMLElement): void {
         </div>
       </section>
 
-      <section class="steps-section" id="how">
-        <div class="steps-wrap">
-          <div class="section-head">
-            <h2>Three steps. That's it.</h2>
-            <p>From zero to editing an interactive resource in less than a minute.</p>
-          </div>
-
-          <div class="steps">
-            <div class="step">
-              <span class="step-num">1</span>
-              <div class="step-visual" aria-hidden="true">
-                <div class="auth-dialog">
-                  <div class="auth-row"><span class="g-dot"></span> Sign in with Google</div>
-                  <div class="auth-perm">See and manage your Drive files</div>
-                  <div class="auth-perm">Open files with eXeLearning</div>
-                  <button class="auth-btn" type="button" tabindex="-1">Continue</button>
-                </div>
-              </div>
-              <h3>Authorize your app</h3>
-              <p>Click <strong>Authorize Google</strong> and grant Drive access. You can revoke it any time from your Google account.</p>
-            </div>
-
-            <div class="step">
-              <span class="step-num">2</span>
-              <div class="step-visual" aria-hidden="true">
-                <div class="drive-files">
-                  <div class="drive-row"><img src="${LOGO_SRC}" alt=""><span class="name">course-draft</span><span class="ext">ELPX</span></div>
-                  <div class="drive-row active"><img src="${LOGO_SRC}" alt=""><span class="name">photosynthesis</span><span class="ext">ELPX</span></div>
-                  <div class="drive-row"><img src="${LOGO_SRC}" alt=""><span class="name">math-unit-3</span><span class="ext">ELPX</span></div>
-                </div>
-              </div>
-              <h3>Open from Drive</h3>
-              <p>Browse your Drive and pick any <code style="background:var(--bg-soft);padding:1px 6px;border-radius:4px;font-size:12.5px;">.elpx</code> file. It opens straight in the eXeLearning editor.</p>
-            </div>
-
-            <div class="step">
-              <span class="step-num">3</span>
-              <div class="step-visual" aria-hidden="true">
-                <div class="new-tile">
-                  <span class="new-tile-badge">NEW</span>
-                  <img src="${LOGO_SRC}" alt="" />
-                  <span class="new-tile-label">Untitled.elpx</span>
-                </div>
-              </div>
-              <h3>Or create a new file</h3>
-              <p>Don't have one yet? Start a fresh eXeLearning resource — it's saved to your Drive as you go.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="action-section" id="authorize">
+      <section class="action-section" id="start">
         <div class="action-wrap">
           <div>
-            <h2>Ready when you are.</h2>
-            <p>Sign in with Google to unlock the editor. Everything stays in your Drive — we never copy or store your files on our servers.</p>
+            <h2>Three steps to start.</h2>
+            <p>Sign in once, then open an existing <strong>.elpx</strong> from Drive or create a fresh one. Nothing leaves your Drive.</p>
           </div>
           <div class="action-card">
             <div class="action-card-head">
@@ -190,14 +109,17 @@ export function renderHome(root: HTMLElement): void {
             <hr />
             <div class="action-btns">
               <button class="action-btn primary" type="button" id="authorize-google">
+                <span class="action-step">1</span>
                 ${AUTHORIZE_ICON}
                 <span>Authorize Google</span>
               </button>
               <a class="action-btn" id="open-drive" href="${DRIVE_URL}" target="_blank" rel="noopener" aria-disabled="true" tabindex="-1">
+                <span class="action-step">2</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h3.6c.5 0 1 .2 1.4.5l1.6 1.5H18.5A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-10Z"/></svg>
                 Open from Drive
               </a>
               <a class="action-btn" id="create-new" href="${createHref}" aria-disabled="true" tabindex="-1">
+                <span class="action-step">3</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
                 New file
               </a>
@@ -208,18 +130,6 @@ export function renderHome(root: HTMLElement): void {
               <div class="diag-row"><strong>Status</strong><span id="auth-status">Awaiting authorization</span></div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="formats">
-        <p class="formats-head">eXeLearning exports</p>
-        <div class="formats-row">
-          <span class="format-chip"><span class="d" style="background:#1a73e8"></span>SCORM 1.2</span>
-          <span class="format-chip"><span class="d" style="background:#34a853"></span>SCORM 2004</span>
-          <span class="format-chip"><span class="d" style="background:#fbbc04"></span>HTML5</span>
-          <span class="format-chip"><span class="d" style="background:#ea4335"></span>ePub3</span>
-          <span class="format-chip"><span class="d" style="background:var(--teal)"></span>IMS</span>
-          <span class="format-chip"><span class="d" style="background:var(--orange)"></span>Moodle</span>
         </div>
       </section>
 
@@ -247,7 +157,7 @@ export function renderHome(root: HTMLElement): void {
 
   const setAuthState = (authed: boolean): void => {
     if (authed) {
-      authBtn.innerHTML = `${AUTHORIZED_ICON}<span>Authorized</span>`;
+      authBtn.innerHTML = `<span class="action-step">1</span>${AUTHORIZED_ICON}<span>Authorized</span>`;
       authBtn.classList.remove('primary');
       authBtn.classList.add('success');
       openLink.removeAttribute('aria-disabled');
@@ -257,7 +167,7 @@ export function renderHome(root: HTMLElement): void {
       authStatus.textContent = 'Connected to Google Drive';
       authStatus.className = 'diag-ok';
     } else {
-      authBtn.innerHTML = `${AUTHORIZE_ICON}<span>Authorize Google</span>`;
+      authBtn.innerHTML = `<span class="action-step">1</span>${AUTHORIZE_ICON}<span>Authorize Google</span>`;
       authBtn.classList.add('primary');
       authBtn.classList.remove('success');
       openLink.setAttribute('aria-disabled', 'true');
