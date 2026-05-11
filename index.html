@@ -3,42 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>gdrive-exelearning</title>
+    <title>gdrive-exelearning · Edit eXeLearning files in Google Drive</title>
     <meta
       name="description"
-      content="Open, edit, and save eXeLearning .elpx projects directly from Google Drive."
+      content="Open, edit, and save eXeLearning .elpx projects directly from Google Drive — free, open source, runs in your browser."
     />
     <link rel="icon" type="image/svg+xml" href="/icons/exelearning.svg" />
     <meta name="google-site-verification" content="dgV29iAv6l5LK0hxA3BP343ctgsY21Dbo5o9sr8G80g" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-      .page-footer {
-        max-width: 64rem;
-        margin: 2rem auto 1.5rem;
-        padding: 0 1.5rem;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        font-size: 0.875rem;
-        color: #57606a;
-        text-align: center;
-      }
-      .page-footer a {
-        color: inherit;
-        text-decoration: underline;
-      }
-      .page-footer a + a::before {
-        content: " · ";
-        margin: 0 0.25rem;
-      }
-      @media (prefers-color-scheme: dark) {
-        .page-footer { color: #8d96a0; }
-      }
-    </style>
   </head>
   <body>
     <div id="app"></div>
-    <footer id="page-footer" class="page-footer">
-      <a href="/gdrive-exelearning/privacy.html">Privacy Policy</a><a href="/gdrive-exelearning/terms.html">Terms of Service</a><a href="https://github.com/exelearning/gdrive-exelearning">Source code</a>
-    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
