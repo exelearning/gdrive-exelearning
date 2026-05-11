@@ -2,8 +2,11 @@ import { authorizeGoogle } from '../auth/google-token-client';
 import { APP_BASE_URL, EDITOR_INDEX_PATH, GOOGLE_CLIENT_ID } from '../config';
 
 const DRIVE_URL = 'https://drive.google.com/drive/my-drive';
+const EXELEARNING_SITE = 'https://exelearning.net';
 const LOGO_SRC =
   'https://raw.githubusercontent.com/exelearning/exelearning/main/public/images/logo.svg';
+const FOOTER_LOGO_SRC =
+  'https://raw.githubusercontent.com/exelearning/exelearning/main/public/exelearning.png';
 
 const AUTHORIZE_ICON = `
   <svg width="14" height="14" viewBox="0 0 48 48" aria-hidden="true">
@@ -30,12 +33,13 @@ export function renderHome(root: HTMLElement): void {
       <header class="nav">
         <div class="nav-left">
           <a href="${homeHref}" class="nav-logo">
-            <img src="${LOGO_SRC}" alt="eXeLearning" />
+            <img src="${LOGO_SRC}" alt="" />
+            <span class="nav-brand">eXeLearning</span>
           </a>
-          <span class="nav-pill">Google Drive add-on</span>
+          <span class="nav-pill">Google Drive Add-on</span>
         </div>
         <div class="nav-right">
-          <a href="https://exelearning.net" target="_blank" rel="noopener">eXeLearning.net</a>
+          <a href="${EXELEARNING_SITE}" target="_blank" rel="noopener">eXeLearning.net</a>
           <a href="#start" class="cta">Get started</a>
         </div>
       </header>
@@ -93,51 +97,43 @@ export function renderHome(root: HTMLElement): void {
       </section>
 
       <section class="action-section" id="start">
-        <div class="action-wrap">
-          <div>
-            <h2>Three steps to start.</h2>
-            <p>Sign in once, then open an existing <strong>.elpx</strong> from Drive or create a fresh one. Nothing leaves your Drive.</p>
+        <div class="action-card">
+          <div class="action-card-head">
+            <img src="${LOGO_SRC}" alt="eXeLearning" />
+            <div>
+              <div class="action-card-title">gdrive-exelearning</div>
+              <div style="font-size:12px;color:var(--ink-3);">Open, edit, save .elpx files in Drive</div>
+            </div>
           </div>
-          <div class="action-card">
-            <div class="action-card-head">
-              <img src="${LOGO_SRC}" alt="eXeLearning" />
-              <div>
-                <div class="action-card-title">gdrive-exelearning</div>
-                <div style="font-size:12px;color:var(--ink-3);">Open, edit, save .elpx files in Drive</div>
-              </div>
-            </div>
-            <hr />
-            <div class="action-btns">
-              <button class="action-btn primary" type="button" id="authorize-google">
-                <span class="action-step">1</span>
-                ${AUTHORIZE_ICON}
-                <span>Authorize Google</span>
-              </button>
-              <a class="action-btn" id="open-drive" href="${DRIVE_URL}" target="_blank" rel="noopener" aria-disabled="true" tabindex="-1">
-                <span class="action-step">2</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h3.6c.5 0 1 .2 1.4.5l1.6 1.5H18.5A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-10Z"/></svg>
-                Open from Drive
-              </a>
-              <a class="action-btn" id="create-new" href="${createHref}" aria-disabled="true" tabindex="-1">
-                <span class="action-step">3</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
-                New file
-              </a>
-            </div>
-            <div class="diagnostics">
-              <div class="diag-row"><strong>Google client</strong>${clientStatus}</div>
-              <div class="diag-row"><strong>Editor</strong><span id="editor-diagnostic">Checking…</span></div>
-              <div class="diag-row"><strong>Status</strong><span id="auth-status">Awaiting authorization</span></div>
-            </div>
+          <hr />
+          <div class="action-flow">
+            <button class="action-btn primary" type="button" id="authorize-google">
+              ${AUTHORIZE_ICON}
+              <span>Authorize Google</span>
+            </button>
+            <span class="action-divider" aria-hidden="true"></span>
+            <a class="action-btn" id="open-drive" href="${DRIVE_URL}" target="_blank" rel="noopener" aria-disabled="true" tabindex="-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h3.6c.5 0 1 .2 1.4.5l1.6 1.5H18.5A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-10Z"/></svg>
+              Open from Drive
+            </a>
+            <span class="action-or" aria-hidden="true">or</span>
+            <a class="action-btn" id="create-new" href="${createHref}" aria-disabled="true" tabindex="-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
+              New file
+            </a>
+          </div>
+          <div class="diagnostics">
+            <div class="diag-row"><strong>Google client</strong>${clientStatus}</div>
+            <div class="diag-row"><strong>Editor</strong><span id="editor-diagnostic">Checking…</span></div>
+            <div class="diag-row"><strong>Status</strong><span id="auth-status">Awaiting authorization</span></div>
           </div>
         </div>
       </section>
 
       <footer class="landing-footer">
-        <div class="foot-left">
-          <img src="${LOGO_SRC}" alt="eXeLearning" />
-          <span>© eXeLearning · gdrive-exelearning</span>
-        </div>
+        <a class="foot-left" href="${EXELEARNING_SITE}" target="_blank" rel="noopener">
+          <img src="${FOOTER_LOGO_SRC}" alt="eXeLearning" />
+        </a>
         <nav>
           <a href="${APP_BASE_URL}privacy.html">Privacy Policy</a>
           <a href="${APP_BASE_URL}terms.html">Terms of Service</a>
@@ -157,7 +153,7 @@ export function renderHome(root: HTMLElement): void {
 
   const setAuthState = (authed: boolean): void => {
     if (authed) {
-      authBtn.innerHTML = `<span class="action-step">1</span>${AUTHORIZED_ICON}<span>Authorized</span>`;
+      authBtn.innerHTML = `${AUTHORIZED_ICON}<span>Authorized</span>`;
       authBtn.classList.remove('primary');
       authBtn.classList.add('success');
       openLink.removeAttribute('aria-disabled');
@@ -167,7 +163,7 @@ export function renderHome(root: HTMLElement): void {
       authStatus.textContent = 'Connected to Google Drive';
       authStatus.className = 'diag-ok';
     } else {
-      authBtn.innerHTML = `<span class="action-step">1</span>${AUTHORIZE_ICON}<span>Authorize Google</span>`;
+      authBtn.innerHTML = `${AUTHORIZE_ICON}<span>Authorize Google</span>`;
       authBtn.classList.add('primary');
       authBtn.classList.remove('success');
       openLink.setAttribute('aria-disabled', 'true');
