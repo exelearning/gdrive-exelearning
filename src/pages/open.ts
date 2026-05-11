@@ -188,19 +188,21 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
           setEditorTitle(root, created.name);
         } else {
           status.set('Checking for remote changes…');
+          const currentSnapshot = snapshot;
           const saved = await saveDriveFile({
             token,
-            snapshot,
+            snapshot: currentSnapshot,
             bytes: savePayload.bytes,
-            resolveConflict: () => confirmOverwriteRemoteChange(snapshot!.name),
+            resolveConflict: () =>
+              confirmOverwriteRemoteChange(currentSnapshot.name),
           });
           if (!saved) {
             status.set('Save cancelled.', 'warning');
             savingModal.hide();
             return;
           }
-          snapshot.modifiedTime = saved.modifiedTime;
-          snapshot.version = saved.version;
+          currentSnapshot.modifiedTime = saved.modifiedTime;
+          currentSnapshot.version = saved.version;
         }
 
         dirty = false;

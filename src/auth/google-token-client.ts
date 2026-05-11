@@ -103,8 +103,12 @@ export function createGoogleTokenClient(
     return oauth2;
   };
 
-  const hasValidToken = () =>
-    currentToken !== null && currentToken.expiresAt - expirySkewMs > now();
+  const getValidToken = (): GoogleAccessToken | null =>
+    currentToken !== null && currentToken.expiresAt - expirySkewMs > now()
+      ? currentToken
+      : null;
+
+  const hasValidToken = () => getValidToken() !== null;
 
   const getTokenClient = () => {
     if (tokenClient) {
@@ -173,8 +177,8 @@ export function createGoogleTokenClient(
 
   return {
     getAccessToken: requestOptions => {
-      if (hasValidToken()) {
-        const validToken = currentToken!;
+      const validToken = getValidToken();
+      if (validToken) {
         return Promise.resolve(validToken.accessToken);
       }
 

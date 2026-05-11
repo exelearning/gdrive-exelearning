@@ -201,9 +201,7 @@ export class EditorFrame {
           window.clearTimeout(timeout);
           unsubscribe();
           const errorMessage =
-            typeof message['error'] === 'string'
-              ? message['error']
-              : message.type;
+            typeof message.error === 'string' ? message.error : message.type;
           reject(
             new Error(
               `The eXeLearning editor reported an error: ${errorMessage}`,

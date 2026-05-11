@@ -38,15 +38,15 @@ async function clearIndexedDb(): Promise<void> {
     return;
   }
 
-  await Promise.all(
-    infos
-      .filter(
-        info =>
-          info.name &&
-          EDITOR_DB_PREFIXES.some(prefix => info.name!.startsWith(prefix)),
-      )
-      .map(info => deleteDatabase(info.name!)),
-  );
+  const editorDatabaseNames = infos
+    .map(info => info.name)
+    .filter(
+      (name): name is string =>
+        typeof name === 'string' &&
+        EDITOR_DB_PREFIXES.some(prefix => name.startsWith(prefix)),
+    );
+
+  await Promise.all(editorDatabaseNames.map(deleteDatabase));
 }
 
 function deleteDatabase(name: string): Promise<void> {
