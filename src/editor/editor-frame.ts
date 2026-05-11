@@ -1,8 +1,11 @@
-import { buildEditorBootHtml, type BuildEditorBootHtmlOptions } from './editor-boot';
 import {
+  type BuildEditorBootHtmlOptions,
+  buildEditorBootHtml,
+} from './editor-boot';
+import {
+  type EditorMessage,
   isEditorMessage,
   normalizeBytes,
-  type EditorMessage,
   type OpenFileRequestData,
   type SaveFileResponse,
 } from './editor-messages';
@@ -74,12 +77,20 @@ export class EditorFrame {
   async openFile(options: OpenFileOptions): Promise<void> {
     this.ensureReady();
     const requestId = this.nextRequestId('open');
-    const success = this.waitForReply(['OPEN_FILE_SUCCESS'], ['OPEN_FILE_ERROR'], requestId, 60_000);
+    const success = this.waitForReply(
+      ['OPEN_FILE_SUCCESS'],
+      ['OPEN_FILE_ERROR'],
+      requestId,
+      60_000,
+    );
     this.post(
       {
         type: 'OPEN_FILE',
         requestId,
-        data: { bytes: options.bytes, filename: options.filename } satisfies OpenFileRequestData,
+        data: {
+          bytes: options.bytes,
+          filename: options.filename,
+        } satisfies OpenFileRequestData,
       },
       [options.bytes],
     );
@@ -89,12 +100,18 @@ export class EditorFrame {
   async requestSave(): Promise<SavedFile> {
     this.ensureReady();
     const requestId = this.nextRequestId('save');
-    const replyPromise = this.waitForReply(['SAVE_FILE'], ['REQUEST_SAVE_ERROR'], requestId, 60_000);
+    const replyPromise = this.waitForReply(
+      ['SAVE_FILE'],
+      ['REQUEST_SAVE_ERROR'],
+      requestId,
+      60_000,
+    );
     this.post({ type: 'REQUEST_SAVE', requestId });
     const message = (await replyPromise) as unknown as SaveFileResponse;
     return {
       bytes: normalizeBytes(message.bytes),
-      filename: typeof message.filename === 'string' ? message.filename : undefined,
+      filename:
+        typeof message.filename === 'string' ? message.filename : undefined,
     };
   }
 
@@ -137,10 +154,14 @@ export class EditorFrame {
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         unsubscribe();
-        reject(new Error(`Timed out waiting for ${type} from the eXeLearning editor.`));
+        reject(
+          new Error(
+            `Timed out waiting for ${type} from the eXeLearning editor.`,
+          ),
+        );
       }, timeoutMs);
 
-      const unsubscribe = this.onMessage((message) => {
+      const unsubscribe = this.onMessage(message => {
         if (message.type === type) {
           window.clearTimeout(timeout);
           unsubscribe();
@@ -159,10 +180,14 @@ export class EditorFrame {
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         unsubscribe();
-        reject(new Error(`Timed out waiting for the eXeLearning editor to respond to ${requestId}.`));
+        reject(
+          new Error(
+            `Timed out waiting for the eXeLearning editor to respond to ${requestId}.`,
+          ),
+        );
       }, timeoutMs);
 
-      const unsubscribe = this.onMessage((message) => {
+      const unsubscribe = this.onMessage(message => {
         if (message.requestId !== requestId) {
           return;
         }
@@ -175,15 +200,25 @@ export class EditorFrame {
         if (errorTypes.includes(message.type)) {
           window.clearTimeout(timeout);
           unsubscribe();
-          const errorMessage = typeof message['error'] === 'string' ? message['error'] : message.type;
-          reject(new Error(`The eXeLearning editor reported an error: ${errorMessage}`));
+          const errorMessage =
+            typeof message['error'] === 'string'
+              ? message['error']
+              : message.type;
+          reject(
+            new Error(
+              `The eXeLearning editor reported an error: ${errorMessage}`,
+            ),
+          );
         }
       });
     });
   }
 
   private readonly handleMessage = (event: MessageEvent<unknown>): void => {
-    if (event.source !== this.iframe.contentWindow || !isEditorMessage(event.data)) {
+    if (
+      event.source !== this.iframe.contentWindow ||
+      !isEditorMessage(event.data)
+    ) {
       return;
     }
     for (const handler of this.handlers) {

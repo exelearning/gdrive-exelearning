@@ -8,7 +8,9 @@ export function confirmOverwriteRemoteChange(filename: string): ConflictChoice {
     return 'overwrite';
   }
 
-  const copy = window.confirm('Save the editor contents as a new copy instead? Press Cancel to stop saving.');
+  const copy = window.confirm(
+    'Save the editor contents as a new copy instead? Press Cancel to stop saving.',
+  );
   return copy ? 'copy' : 'cancel';
 }
 
@@ -57,7 +59,10 @@ export class SavingModal {
   }
 
   hide(): void {
-    this.element?.classList.remove('saving-modal--visible', 'saving-modal--error');
+    this.element?.classList.remove(
+      'saving-modal--visible',
+      'saving-modal--error',
+    );
   }
 
   destroy(): void {
@@ -88,7 +93,9 @@ export class SavingModal {
     this.element = overlay;
     this.titleNode = overlay.querySelector<HTMLElement>('.saving-modal__title');
     this.hintNode = overlay.querySelector<HTMLElement>('.saving-modal__hint');
-    this.closeButton = overlay.querySelector<HTMLButtonElement>('.saving-modal__close');
+    this.closeButton = overlay.querySelector<HTMLButtonElement>(
+      '.saving-modal__close',
+    );
     this.closeButton?.addEventListener('click', () => this.hide());
   }
 }

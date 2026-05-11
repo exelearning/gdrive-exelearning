@@ -105,10 +105,13 @@ export async function getFileMetadata(
   const fields =
     options?.fields ??
     'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit)';
-  const url = buildDriveUrl(`${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}`, {
-    fields,
-    supportsAllDrives: 'true',
-  });
+  const url = buildDriveUrl(
+    `${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}`,
+    {
+      fields,
+      supportsAllDrives: 'true',
+    },
+  );
 
   return parseJsonResponse<DriveFileMetadata>(
     await fetch(url, {
@@ -131,10 +134,13 @@ export async function downloadFile(
   options?: DownloadFileOptions,
 ): Promise<Blob | ArrayBuffer> {
   const normalized = normalizeFileRequest(fileIdOrOptions, options);
-  const url = buildDriveUrl(`${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}`, {
-    alt: 'media',
-    supportsAllDrives: 'true',
-  });
+  const url = buildDriveUrl(
+    `${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}`,
+    {
+      alt: 'media',
+      supportsAllDrives: 'true',
+    },
+  );
   const response = await fetch(url, {
     method: 'GET',
     headers: buildDriveHeaders(normalized),
@@ -142,7 +148,9 @@ export async function downloadFile(
   });
 
   await assertDriveResponse(response);
-  return typeof fileIdOrOptions === 'string' ? response.blob() : response.arrayBuffer();
+  return typeof fileIdOrOptions === 'string'
+    ? response.blob()
+    : response.arrayBuffer();
 }
 
 export function updateFileContent(
@@ -154,7 +162,9 @@ export function updateFileContent(
   options: LegacyDriveRequestOptions & { bytes: ArrayBuffer },
 ): Promise<DriveFileMetadata>;
 export async function updateFileContent(
-  fileIdOrOptions: string | (LegacyDriveRequestOptions & { bytes: ArrayBuffer }),
+  fileIdOrOptions:
+    | string
+    | (LegacyDriveRequestOptions & { bytes: ArrayBuffer }),
   content?: Blob | string | ArrayBuffer | Uint8Array,
   options?: UpdateFileContentOptions,
 ): Promise<DriveFileMetadata> {
@@ -162,16 +172,20 @@ export async function updateFileContent(
     typeof fileIdOrOptions === 'string'
       ? normalizeFileRequest(fileIdOrOptions, options)
       : normalizeFileRequest(fileIdOrOptions);
-  const uploadContent = typeof fileIdOrOptions === 'string' ? content : fileIdOrOptions.bytes;
+  const uploadContent =
+    typeof fileIdOrOptions === 'string' ? content : fileIdOrOptions.bytes;
 
   if (!uploadContent) {
     throw new Error('Missing Drive file content.');
   }
 
-  const url = buildDriveUrl(`${DRIVE_UPLOAD_BASE}/files/${encodeURIComponent(normalized.fileId)}`, {
-    uploadType: 'media',
-    supportsAllDrives: 'true',
-  });
+  const url = buildDriveUrl(
+    `${DRIVE_UPLOAD_BASE}/files/${encodeURIComponent(normalized.fileId)}`,
+    {
+      uploadType: 'media',
+      supportsAllDrives: 'true',
+    },
+  );
   const headers = buildDriveHeaders(normalized);
 
   if (options?.mimeType) {
@@ -188,7 +202,9 @@ export async function updateFileContent(
   );
 }
 
-export function createFile(options: CreateFileOptions): Promise<DriveFileMetadata>;
+export function createFile(
+  options: CreateFileOptions,
+): Promise<DriveFileMetadata>;
 export function createFile(
   options: LegacyCreateFileOptions,
 ): Promise<DriveFileMetadata>;
@@ -209,13 +225,20 @@ export async function createFile(
     ...(normalized.parents ? { parents: normalized.parents } : {}),
   };
   const headers = buildDriveHeaders(normalized);
-  headers.set('Content-Type', `multipart/related; boundary=${MULTIPART_BOUNDARY}`);
+  headers.set(
+    'Content-Type',
+    `multipart/related; boundary=${MULTIPART_BOUNDARY}`,
+  );
 
   return parseJsonResponse<DriveFileMetadata>(
     await fetch(url, {
       method: 'POST',
       headers,
-      body: await buildMultipartBody(metadata, normalized.content, normalized.mimeType),
+      body: await buildMultipartBody(
+        metadata,
+        normalized.content,
+        normalized.mimeType,
+      ),
       signal: normalized.signal,
     }),
   );
@@ -257,13 +280,18 @@ export async function updateFileMetadata(
     throw new Error('updateFileMetadata called without any fields to update.');
   }
 
-  const url = buildDriveUrl(`${DRIVE_API_BASE}/files/${encodeURIComponent(options.fileId)}`, {
-    fields: 'id,name,mimeType,modifiedTime,version,thumbnailLink',
-    supportsAllDrives: 'true',
-  });
+  const url = buildDriveUrl(
+    `${DRIVE_API_BASE}/files/${encodeURIComponent(options.fileId)}`,
+    {
+      fields: 'id,name,mimeType,modifiedTime,version,thumbnailLink',
+      supportsAllDrives: 'true',
+    },
+  );
   const headers = buildDriveHeaders({
     accessToken: options.token,
-    resourceKeys: options.resourceKey ? [{ fileId: options.fileId, resourceKey: options.resourceKey }] : undefined,
+    resourceKeys: options.resourceKey
+      ? [{ fileId: options.fileId, resourceKey: options.resourceKey }]
+      : undefined,
     signal: options.signal,
   });
   headers.set('Content-Type', 'application/json; charset=UTF-8');
@@ -284,7 +312,10 @@ function arrayBufferToUrlSafeBase64(buffer: ArrayBuffer): string {
   for (let i = 0; i < bytes.length; i += 1) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 export type ListFilesOptions = {
@@ -295,7 +326,9 @@ export type ListFilesOptions = {
   signal?: AbortSignal;
 };
 
-export async function listFiles(options: ListFilesOptions): Promise<{ files: DriveFileMetadata[] }> {
+export async function listFiles(
+  options: ListFilesOptions,
+): Promise<{ files: DriveFileMetadata[] }> {
   const url = buildDriveUrl(`${DRIVE_API_BASE}/files`, {
     q: options.query,
     fields: options.fields ?? 'files(id,name)',
@@ -306,7 +339,10 @@ export async function listFiles(options: ListFilesOptions): Promise<{ files: Dri
   return parseJsonResponse<{ files: DriveFileMetadata[] }>(
     await fetch(url, {
       method: 'GET',
-      headers: buildDriveHeaders({ accessToken: options.token, signal: options.signal }),
+      headers: buildDriveHeaders({
+        accessToken: options.token,
+        signal: options.signal,
+      }),
       signal: options.signal,
     }),
   );
@@ -317,7 +353,9 @@ export async function startResumableUploadSession(
 ): Promise<string> {
   const url = buildDriveUrl(`${DRIVE_UPLOAD_BASE}/files`, {
     uploadType: 'resumable',
-    fields: options.fields ?? 'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink',
+    fields:
+      options.fields ??
+      'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink',
     supportsAllDrives: 'true',
   });
   const headers = buildDriveHeaders(options);
@@ -343,13 +381,19 @@ export async function startResumableUploadSession(
 
   const location = response.headers.get('Location');
   if (!location) {
-    throw new DriveApiError(response.status, 'Drive did not return a resumable upload session URL.', null);
+    throw new DriveApiError(
+      response.status,
+      'Drive did not return a resumable upload session URL.',
+      null,
+    );
   }
 
   return location;
 }
 
-export function buildResourceKeyHeader(resourceKeys: DriveResourceKey[] = []): string | null {
+export function buildResourceKeyHeader(
+  resourceKeys: DriveResourceKey[] = [],
+): string | null {
   if (resourceKeys.length === 0) {
     return null;
   }
@@ -372,7 +416,10 @@ function buildDriveHeaders(options: DriveRequestOptions): Headers {
   return headers;
 }
 
-function buildDriveUrl(baseUrl: string, params: Record<string, string>): string {
+function buildDriveUrl(
+  baseUrl: string,
+  params: Record<string, string>,
+): string {
   const url = new URL(baseUrl);
 
   for (const [key, value] of Object.entries(params)) {
@@ -382,7 +429,9 @@ function buildDriveUrl(baseUrl: string, params: Record<string, string>): string 
   return url.toString();
 }
 
-function normalizeBody(content: Blob | string | ArrayBuffer | Uint8Array): BodyInit {
+function normalizeBody(
+  content: Blob | string | ArrayBuffer | Uint8Array,
+): BodyInit {
   if (content instanceof Uint8Array) {
     return content.slice().buffer as ArrayBuffer;
   }
@@ -413,7 +462,9 @@ async function buildMultipartBody(
   );
 }
 
-function normalizeBlobPart(content: Blob | string | ArrayBuffer | Uint8Array): BlobPart {
+function normalizeBlobPart(
+  content: Blob | string | ArrayBuffer | Uint8Array,
+): BlobPart {
   if (content instanceof Uint8Array) {
     return content.slice().buffer as ArrayBuffer;
   }
@@ -440,7 +491,12 @@ function normalizeFileRequest(
     accessToken: fileIdOrOptions.token,
     fileId: fileIdOrOptions.fileId,
     resourceKeys: fileIdOrOptions.resourceKey
-      ? [{ fileId: fileIdOrOptions.fileId, resourceKey: fileIdOrOptions.resourceKey }]
+      ? [
+          {
+            fileId: fileIdOrOptions.fileId,
+            resourceKey: fileIdOrOptions.resourceKey,
+          },
+        ]
       : undefined,
     signal: fileIdOrOptions.signal,
   };
@@ -464,7 +520,8 @@ function normalizeCreateFileOptions(
         ? [{ fileId: options.fileId, resourceKey: options.resourceKey }]
         : undefined,
     signal: options.signal,
-    fields: 'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit)',
+    fields:
+      'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit)',
   };
 }
 
@@ -479,7 +536,11 @@ async function assertDriveResponse(response: Response): Promise<void> {
   }
 
   const details = await parseErrorDetails(response);
-  throw new DriveApiError(response.status, getErrorMessage(details, response.statusText), details);
+  throw new DriveApiError(
+    response.status,
+    getErrorMessage(details, response.statusText),
+    details,
+  );
 }
 
 async function parseErrorDetails(response: Response): Promise<unknown> {

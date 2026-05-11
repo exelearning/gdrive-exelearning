@@ -17,7 +17,9 @@ export const ELPX_MIME_TYPE = 'application/vnd.exelearning.elpx';
 
 export function requireGoogleClientId(): string {
   if (!GOOGLE_CLIENT_ID) {
-    throw new Error('Missing VITE_GOOGLE_CLIENT_ID. Configure it in your environment before using Google Drive.');
+    throw new Error(
+      'Missing VITE_GOOGLE_CLIENT_ID. Configure it in your environment before using Google Drive.',
+    );
   }
   return GOOGLE_CLIENT_ID;
 }

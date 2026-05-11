@@ -1,5 +1,13 @@
-import { createFile, getFileMetadata, updateFileContent, type DriveFileMetadata } from './drive-api';
-import { hasRemoteRevisionChanged, type OpenedDriveFileSnapshot } from './drive-state';
+import {
+  createFile,
+  type DriveFileMetadata,
+  getFileMetadata,
+  updateFileContent,
+} from './drive-api';
+import {
+  hasRemoteRevisionChanged,
+  type OpenedDriveFileSnapshot,
+} from './drive-state';
 
 export type SaveConflictResolution = 'overwrite' | 'copy' | 'cancel';
 

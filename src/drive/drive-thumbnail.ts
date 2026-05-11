@@ -1,5 +1,5 @@
-import { extractZipEntry } from '../elpx/zip-extract';
 import { ELPX_MIME_TYPE } from '../config';
+import { extractZipEntry } from '../elpx/zip-extract';
 import { updateFileMetadata } from './drive-api';
 
 const SCREENSHOT_PATH = 'screenshot.png';
@@ -39,7 +39,10 @@ export async function publishElpxThumbnail(options: {
       thumbnail: { bytes: screenshot, mimeType: 'image/png' },
     });
   } catch (error) {
-    console.warn('[gdrive-exelearning] Failed to publish Drive thumbnail:', error);
+    console.warn(
+      '[gdrive-exelearning] Failed to publish Drive thumbnail:',
+      error,
+    );
   }
 }
 

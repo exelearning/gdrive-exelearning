@@ -1,5 +1,5 @@
-import { APP_NAME, EDITOR_INDEX_PATH, GOOGLE_CLIENT_ID } from '../config';
 import { authorizeGoogle } from '../auth/google-token-client';
+import { APP_NAME, EDITOR_INDEX_PATH, GOOGLE_CLIENT_ID } from '../config';
 import { formatError, StatusView } from '../ui/status';
 
 export function renderHome(root: HTMLElement): void {
@@ -35,20 +35,31 @@ export function renderHome(root: HTMLElement): void {
 
   void checkEditorInstalled(diagnostic);
 
-  requiredElement(root, '#authorize-google').addEventListener('click', async () => {
-    try {
-      await authorizeGoogle();
-      status.set('Google authorization succeeded. Drive endpoints can now request an access token.', 'success');
-    } catch (error) {
-      status.set(formatError(error), 'error');
-    }
-  });
+  requiredElement(root, '#authorize-google').addEventListener(
+    'click',
+    async () => {
+      try {
+        await authorizeGoogle();
+        status.set(
+          'Google authorization succeeded. Drive endpoints can now request an access token.',
+          'success',
+        );
+      } catch (error) {
+        status.set(formatError(error), 'error');
+      }
+    },
+  );
 }
 
 async function checkEditorInstalled(target: HTMLElement): Promise<void> {
   try {
-    const response = await fetch(EDITOR_INDEX_PATH, { method: 'HEAD', cache: 'no-cache' });
-    target.textContent = response.ok ? `Installed at ${EDITOR_INDEX_PATH}` : `Not found at ${EDITOR_INDEX_PATH}`;
+    const response = await fetch(EDITOR_INDEX_PATH, {
+      method: 'HEAD',
+      cache: 'no-cache',
+    });
+    target.textContent = response.ok
+      ? `Installed at ${EDITOR_INDEX_PATH}`
+      : `Not found at ${EDITOR_INDEX_PATH}`;
   } catch {
     target.textContent = `Not found at ${EDITOR_INDEX_PATH}`;
   }

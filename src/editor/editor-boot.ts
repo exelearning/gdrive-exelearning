@@ -59,7 +59,9 @@ const FORCE_HIDE_SELECTORS = [
  * the canonical EXELEARNING_READY and DOCUMENT_LOADED events, so we must NOT
  * fake them from this side.
  */
-export async function buildEditorBootHtml(options: BuildEditorBootHtmlOptions): Promise<string> {
+export async function buildEditorBootHtml(
+  options: BuildEditorBootHtmlOptions,
+): Promise<string> {
   const response = await fetch(EDITOR_INDEX_PATH, { cache: 'no-cache' });
   if (!response.ok) {
     throw new Error(
@@ -70,8 +72,14 @@ export async function buildEditorBootHtml(options: BuildEditorBootHtmlOptions): 
   const html = await response.text();
   const dom = new DOMParser().parseFromString(html, 'text/html');
 
-  const editorBaseHref = new URL(EDITOR_PATH, window.location.origin).toString();
-  const editorBasePath = new URL(EDITOR_PATH, window.location.origin).pathname.replace(/\/+$/, '');
+  const editorBaseHref = new URL(
+    EDITOR_PATH,
+    window.location.origin,
+  ).toString();
+  const editorBasePath = new URL(
+    EDITOR_PATH,
+    window.location.origin,
+  ).pathname.replace(/\/+$/, '');
 
   // Replace any existing <base> element so relative URLs resolve against the editor folder.
   dom.querySelector('base')?.remove();

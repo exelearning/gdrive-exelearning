@@ -36,7 +36,7 @@ function normalizeRoute(pathname: string): string {
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => {
+  return value.replace(/[&<>"']/g, char => {
     const entities: Record<string, string> = {
       '&': '&amp;',
       '<': '&lt;',

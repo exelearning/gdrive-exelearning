@@ -20,7 +20,9 @@ export async function resetEditorLocalStorage(): Promise<void> {
 
 async function clearIndexedDb(): Promise<void> {
   const indexed = window.indexedDB;
-  const databases = (indexed as IDBFactory & { databases?: () => Promise<IDBDatabaseInfo[]> }).databases;
+  const databases = (
+    indexed as IDBFactory & { databases?: () => Promise<IDBDatabaseInfo[]> }
+  ).databases;
   if (typeof databases !== 'function') {
     // Firefox / old Safari: no enumeration API. We have no reliable way to
     // discover Yjs databases from this side, so skip — the editor will still
@@ -38,13 +40,17 @@ async function clearIndexedDb(): Promise<void> {
 
   await Promise.all(
     infos
-      .filter((info) => info.name && EDITOR_DB_PREFIXES.some((prefix) => info.name!.startsWith(prefix)))
-      .map((info) => deleteDatabase(info.name!)),
+      .filter(
+        info =>
+          info.name &&
+          EDITOR_DB_PREFIXES.some(prefix => info.name!.startsWith(prefix)),
+      )
+      .map(info => deleteDatabase(info.name!)),
   );
 }
 
 function deleteDatabase(name: string): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const request = window.indexedDB.deleteDatabase(name);
     const finish = () => resolve();
     request.onsuccess = finish;
@@ -58,7 +64,10 @@ function clearLocalStorageKeys(): void {
     const toRemove: string[] = [];
     for (let i = 0; i < window.localStorage.length; i += 1) {
       const key = window.localStorage.key(i);
-      if (key && EDITOR_LOCAL_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+      if (
+        key &&
+        EDITOR_LOCAL_STORAGE_PREFIXES.some(prefix => key.startsWith(prefix))
+      ) {
         toRemove.push(key);
       }
     }
@@ -66,6 +75,9 @@ function clearLocalStorageKeys(): void {
       window.localStorage.removeItem(key);
     }
   } catch (error) {
-    console.warn('[gdrive-exelearning] Failed to clear localStorage keys:', error);
+    console.warn(
+      '[gdrive-exelearning] Failed to clear localStorage keys:',
+      error,
+    );
   }
 }

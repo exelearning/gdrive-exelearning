@@ -11,7 +11,9 @@ export async function fetchEditableDriveFile(options: {
   const metadata = await getFileMetadata(options);
 
   if (metadata.capabilities?.canDownload === false) {
-    throw new Error(`Google Drive does not allow downloading "${metadata.name}".`);
+    throw new Error(
+      `Google Drive does not allow downloading "${metadata.name}".`,
+    );
   }
 
   const bytes = await downloadFile(options);

@@ -39,7 +39,10 @@ export function setEditorTitle(root: HTMLElement, filename: string): void {
   document.title = `eXeLearning – ${filename}`;
 }
 
-export function requiredElement(root: HTMLElement, selector: string): HTMLElement {
+export function requiredElement(
+  root: HTMLElement,
+  selector: string,
+): HTMLElement {
   const element = root.querySelector<HTMLElement>(selector);
   if (!element) {
     throw new Error(`Missing UI element ${selector}.`);
@@ -61,7 +64,7 @@ export function closeEditor(): void {
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => {
+  return value.replace(/[&<>"']/g, char => {
     const entities: Record<string, string> = {
       '&': '&amp;',
       '<': '&lt;',

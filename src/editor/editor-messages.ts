@@ -61,10 +61,12 @@ export interface SaveFileResponse {
 }
 
 export function isEditorMessage(value: unknown): value is EditorMessage {
-  return typeof value === 'object'
-    && value !== null
-    && 'type' in value
-    && typeof (value as { type: unknown }).type === 'string';
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof (value as { type: unknown }).type === 'string'
+  );
 }
 
 export function normalizeBytes(value: unknown): ArrayBuffer {
@@ -72,7 +74,11 @@ export function normalizeBytes(value: unknown): ArrayBuffer {
     return value;
   }
   if (ArrayBuffer.isView(value)) {
-    const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+    const bytes = new Uint8Array(
+      value.buffer,
+      value.byteOffset,
+      value.byteLength,
+    );
     return new Uint8Array(bytes).buffer;
   }
   throw new Error('The editor returned a save payload without binary bytes.');

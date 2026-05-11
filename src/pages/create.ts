@@ -2,15 +2,20 @@ import { requestAccessToken } from '../auth/google-token-client';
 import { BLANK_TEMPLATE_PATH } from '../config';
 import { createFile, listFiles } from '../drive/drive-api';
 import {
-  parseDriveStateFromParams,
   type DriveCreateState,
   type OpenedDriveFileSnapshot,
+  parseDriveStateFromParams,
 } from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
 import { confirmOverwriteRemoteChange, SavingModal } from '../ui/dialogs';
-import { closeEditor, renderEditorPage, requiredElement, setEditorTitle } from '../ui/editor-shell';
+import {
+  closeEditor,
+  renderEditorPage,
+  requiredElement,
+  setEditorTitle,
+} from '../ui/editor-shell';
 import { formatError, StatusView } from '../ui/status';
 
 export async function renderCreate(root: HTMLElement): Promise<void> {
@@ -25,8 +30,14 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   renderEditorPage(root, 'Connecting to Google Drive…');
   const status = new StatusView(requiredElement(root, '#status'));
   const saveButton = requiredElement(root, '#save-drive') as HTMLButtonElement;
-  const openButton = requiredElement(root, '#authorize-open') as HTMLButtonElement;
-  const closeButton = requiredElement(root, '#close-editor') as HTMLButtonElement;
+  const openButton = requiredElement(
+    root,
+    '#authorize-open',
+  ) as HTMLButtonElement;
+  const closeButton = requiredElement(
+    root,
+    '#close-editor',
+  ) as HTMLButtonElement;
   const savingModal = new SavingModal();
 
   openButton.textContent = 'Authorize and create';
@@ -61,7 +72,10 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
 
   async function createInDrive(prompt: 'none' | 'consent'): Promise<void> {
     status.set('Requesting Google authorization…');
-    const token = await requestAccessToken({ prompt, interactive: prompt === 'consent' });
+    const token = await requestAccessToken({
+      prompt,
+      interactive: prompt === 'consent',
+    });
     openButton.hidden = true;
 
     status.set('Loading blank .elpx template…');
@@ -100,8 +114,11 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
       hideUI: { fileMenu: true, saveButton: true, userMenu: true },
     });
     let dirty = false;
-    editor.onMessage((message) => {
-      if (message.type === 'EXELEARNING_EVENT' && (message as { event?: string }).event === 'PROJECT_DIRTY') {
+    editor.onMessage(message => {
+      if (
+        message.type === 'EXELEARNING_EVENT' &&
+        (message as { event?: string }).event === 'PROJECT_DIRTY'
+      ) {
         dirty = true;
         status.set('Unsaved changes.', 'warning');
       }
@@ -152,7 +169,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
       }
     }
 
-    window.addEventListener('beforeunload', (event) => {
+    window.addEventListener('beforeunload', event => {
       if (dirty) {
         event.preventDefault();
       }
@@ -173,12 +190,15 @@ const NUMBERED_FILENAME_REGEX = /^Untitled \((\d+)\)\.elpx$/;
  * `Untitled.elpx` someone else created in the same folder is invisible to us
  * and harmless because Drive identifies files by id, not by name.
  */
-async function pickUntitledFilename(token: string, folderId: string | undefined): Promise<string> {
+async function pickUntitledFilename(
+  token: string,
+  folderId: string | undefined,
+): Promise<string> {
   // Use a permissive `name contains 'Untitled'` query and do the precise
   // matching client-side: building a `name contains 'Untitled ('` literal
   // works against Drive but is fragile across API versions, and the cost of
   // pulling a few extra rows we discard locally is negligible.
-  const queryParts = ["trashed=false", "name contains 'Untitled'"];
+  const queryParts = ['trashed=false', "name contains 'Untitled'"];
   if (folderId) {
     queryParts.push(`'${folderId.replace(/'/g, "\\'")}' in parents`);
   }
@@ -191,9 +211,14 @@ async function pickUntitledFilename(token: string, folderId: string | undefined)
         existing.add(file.name);
       }
     }
-    console.log('[gdrive-exelearning] Existing Untitled files in folder:', [...existing]);
+    console.log('[gdrive-exelearning] Existing Untitled files in folder:', [
+      ...existing,
+    ]);
   } catch (error) {
-    console.warn('[gdrive-exelearning] Could not list existing Untitled files; using default name:', error);
+    console.warn(
+      '[gdrive-exelearning] Could not list existing Untitled files; using default name:',
+      error,
+    );
     return DEFAULT_FILENAME;
   }
 

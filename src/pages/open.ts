@@ -2,15 +2,24 @@ import { requestAccessToken } from '../auth/google-token-client';
 import { createFile } from '../drive/drive-api';
 import { fetchEditableDriveFile } from '../drive/drive-download';
 import {
-  parseDriveStateFromParams,
   type DriveOpenState,
   type OpenedDriveFileSnapshot,
+  parseDriveStateFromParams,
 } from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
-import { confirmOverwriteRemoteChange, SavingModal, showError } from '../ui/dialogs';
-import { closeEditor, renderEditorPage, requiredElement, setEditorTitle } from '../ui/editor-shell';
+import {
+  confirmOverwriteRemoteChange,
+  SavingModal,
+  showError,
+} from '../ui/dialogs';
+import {
+  closeEditor,
+  renderEditorPage,
+  requiredElement,
+  setEditorTitle,
+} from '../ui/editor-shell';
 import { formatError, StatusView } from '../ui/status';
 
 export async function renderOpen(root: HTMLElement): Promise<void> {
@@ -24,8 +33,14 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
   renderEditorPage(root, 'Connecting to Google Drive…');
   const status = new StatusView(requiredElement(root, '#status'));
   const saveButton = requiredElement(root, '#save-drive') as HTMLButtonElement;
-  const openButton = requiredElement(root, '#authorize-open') as HTMLButtonElement;
-  const closeButton = requiredElement(root, '#close-editor') as HTMLButtonElement;
+  const openButton = requiredElement(
+    root,
+    '#authorize-open',
+  ) as HTMLButtonElement;
+  const closeButton = requiredElement(
+    root,
+    '#close-editor',
+  ) as HTMLButtonElement;
   const fileId = state.ids[0];
   const resourceKey = state.resourceKeys?.[fileId];
   const savingModal = new SavingModal();
@@ -65,18 +80,29 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
 
   async function openFromDrive(prompt: 'none' | 'consent'): Promise<void> {
     status.set('Requesting Google authorization…');
-    const token = await requestAccessToken({ prompt, interactive: prompt === 'consent' });
+    const token = await requestAccessToken({
+      prompt,
+      interactive: prompt === 'consent',
+    });
     openButton.hidden = true;
 
     status.set('Fetching Google Drive metadata…');
-    const { metadata, bytes } = await fetchEditableDriveFile({ token, fileId, resourceKey });
+    const { metadata, bytes } = await fetchEditableDriveFile({
+      token,
+      fileId,
+      resourceKey,
+    });
     const isLegacyElp = isLegacyElpFilename(metadata.name);
     // Legacy .elp files cannot be overwritten — saving always produces a new
     // .elpx companion in the same folder. We therefore consider the editor
     // "writable" regardless of capabilities.canEdit, since we are not
     // touching the original. The user keeps the .elp; we add an .elpx.
-    const canEdit = isLegacyElp ? true : metadata.capabilities?.canEdit !== false;
-    const targetName = isLegacyElp ? convertElpToElpxName(metadata.name) : metadata.name;
+    const canEdit = isLegacyElp
+      ? true
+      : metadata.capabilities?.canEdit !== false;
+    const targetName = isLegacyElp
+      ? convertElpToElpxName(metadata.name)
+      : metadata.name;
     const parents = Array.isArray(metadata.parents) ? metadata.parents : [];
 
     let snapshot: OpenedDriveFileSnapshot | null = isLegacyElp
@@ -97,8 +123,11 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
       hideUI: { fileMenu: true, saveButton: true, userMenu: true },
     });
     let dirty = false;
-    editor.onMessage((message) => {
-      if (message.type === 'EXELEARNING_EVENT' && (message as { event?: string }).event === 'PROJECT_DIRTY') {
+    editor.onMessage(message => {
+      if (
+        message.type === 'EXELEARNING_EVENT' &&
+        (message as { event?: string }).event === 'PROJECT_DIRTY'
+      ) {
         dirty = true;
         status.set('Unsaved changes.', 'warning');
       }
@@ -111,16 +140,24 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
     status.set('Opening…');
     await editor.openFile({ bytes, filename: metadata.name });
     if (isLegacyElp) {
-      status.set('Opened legacy file. Saving will create a new .elpx in the same folder.', 'warning');
+      status.set(
+        'Opened legacy file. Saving will create a new .elpx in the same folder.',
+        'warning',
+      );
     } else {
-      status.set(canEdit ? 'Opened.' : 'Opened in read-only mode.', canEdit ? 'success' : 'warning');
+      status.set(
+        canEdit ? 'Opened.' : 'Opened in read-only mode.',
+        canEdit ? 'success' : 'warning',
+      );
     }
     saveButton.disabled = !canEdit;
     saveButton.addEventListener('click', () => void save());
 
     async function save(): Promise<void> {
       if (!canEdit) {
-        showError('This Google Drive file is read-only and cannot be overwritten.');
+        showError(
+          'This Google Drive file is read-only and cannot be overwritten.',
+        );
         return;
       }
       try {
@@ -183,7 +220,7 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
       }
     }
 
-    window.addEventListener('beforeunload', (event) => {
+    window.addEventListener('beforeunload', event => {
       if (dirty) {
         event.preventDefault();
       }

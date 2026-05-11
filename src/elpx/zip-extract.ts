@@ -40,10 +40,18 @@ export async function extractZipEntry(
     const extraLength = view.getUint16(offset + 30, true);
     const commentLength = view.getUint16(offset + 32, true);
     const localHeaderOffset = view.getUint32(offset + 42, true);
-    const entryName = decoder.decode(new Uint8Array(zipBytes, offset + 46, filenameLength));
+    const entryName = decoder.decode(
+      new Uint8Array(zipBytes, offset + 46, filenameLength),
+    );
 
     if (entryName === filename) {
-      return readEntryData(zipBytes, view, localHeaderOffset, compressedSize, compressionMethod);
+      return readEntryData(
+        zipBytes,
+        view,
+        localHeaderOffset,
+        compressedSize,
+        compressionMethod,
+      );
     }
 
     offset += 46 + filenameLength + extraLength + commentLength;
@@ -61,8 +69,12 @@ async function readEntryData(
 ): Promise<ArrayBuffer | null> {
   const lfhFilenameLength = view.getUint16(localHeaderOffset + 26, true);
   const lfhExtraLength = view.getUint16(localHeaderOffset + 28, true);
-  const dataOffset = localHeaderOffset + 30 + lfhFilenameLength + lfhExtraLength;
-  const compressedData = zipBytes.slice(dataOffset, dataOffset + compressedSize);
+  const dataOffset =
+    localHeaderOffset + 30 + lfhFilenameLength + lfhExtraLength;
+  const compressedData = zipBytes.slice(
+    dataOffset,
+    dataOffset + compressedSize,
+  );
 
   if (compressionMethod === 0) {
     return compressedData;
@@ -74,13 +86,18 @@ async function readEntryData(
 }
 
 async function inflateRaw(deflated: ArrayBuffer): Promise<ArrayBuffer> {
-  const stream = new Blob([deflated]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  const stream = new Blob([deflated])
+    .stream()
+    .pipeThrough(new DecompressionStream('deflate-raw'));
   return new Response(stream).arrayBuffer();
 }
 
 function findEndOfCentralDirectory(view: DataView): number {
   const length = view.byteLength;
-  const minStart = Math.max(0, length - EOCD_FIXED_LENGTH - MAX_EOCD_COMMENT_LENGTH);
+  const minStart = Math.max(
+    0,
+    length - EOCD_FIXED_LENGTH - MAX_EOCD_COMMENT_LENGTH,
+  );
   for (let i = length - EOCD_FIXED_LENGTH; i >= minStart; i -= 1) {
     if (view.getUint32(i, true) === SIGNATURE_END_OF_CENTRAL_DIR) {
       return i;

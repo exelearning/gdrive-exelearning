@@ -61,7 +61,11 @@ export function compareRemoteModification(
     return { status: 'unknown', remote, reason: 'missing-local-snapshot' };
   }
 
-  if (local.md5Checksum && remote.md5Checksum && local.md5Checksum !== remote.md5Checksum) {
+  if (
+    local.md5Checksum &&
+    remote.md5Checksum &&
+    local.md5Checksum !== remote.md5Checksum
+  ) {
     return { status: 'remote-newer', remote, reason: 'md5Checksum' };
   }
 
@@ -89,7 +93,9 @@ export function compareRemoteModification(
   }
 
   if (
-    (local.md5Checksum && remote.md5Checksum && local.md5Checksum === remote.md5Checksum) ||
+    (local.md5Checksum &&
+      remote.md5Checksum &&
+      local.md5Checksum === remote.md5Checksum) ||
     (local.version && remote.version && local.version === remote.version)
   ) {
     return { status: 'same', remote };
@@ -98,7 +104,9 @@ export function compareRemoteModification(
   return { status: 'unknown', remote, reason: 'missing-comparable-fields' };
 }
 
-export function createLocalDriveSnapshot(metadata: DriveFileMetadata): LocalDriveSnapshot {
+export function createLocalDriveSnapshot(
+  metadata: DriveFileMetadata,
+): LocalDriveSnapshot {
   return {
     fileId: metadata.id,
     modifiedTime: metadata.modifiedTime,
@@ -168,12 +176,14 @@ export function parseDriveState(rawState: string | null): DriveState {
 
   if (parsed.action === 'open') {
     if (!Array.isArray(parsed.ids) || parsed.ids.length === 0) {
-      throw new Error('Google Drive open state must include at least one file id.');
+      throw new Error(
+        'Google Drive open state must include at least one file id.',
+      );
     }
 
     return {
       action: 'open',
-      ids: parsed.ids.map((id) => {
+      ids: parsed.ids.map(id => {
         if (typeof id !== 'string') {
           throw new Error('Google Drive file ids must be strings.');
         }
@@ -187,9 +197,12 @@ export function parseDriveState(rawState: string | null): DriveState {
   if (parsed.action === 'create') {
     return {
       action: 'create',
-      folderId: typeof parsed.folderId === 'string' ? parsed.folderId : undefined,
+      folderId:
+        typeof parsed.folderId === 'string' ? parsed.folderId : undefined,
       folderResourceKey:
-        typeof parsed.folderResourceKey === 'string' ? parsed.folderResourceKey : undefined,
+        typeof parsed.folderResourceKey === 'string'
+          ? parsed.folderResourceKey
+          : undefined,
       userId: typeof parsed.userId === 'string' ? parsed.userId : undefined,
     };
   }

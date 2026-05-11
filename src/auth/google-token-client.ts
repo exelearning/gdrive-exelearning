@@ -28,7 +28,10 @@ type GoogleTokenClientConfig = {
 
 type GoogleTokenClient = {
   callback: (response: GoogleTokenResponse) => void;
-  requestAccessToken: (overrideConfig?: { prompt?: string; scope?: string }) => void;
+  requestAccessToken: (overrideConfig?: {
+    prompt?: string;
+    scope?: string;
+  }) => void;
 };
 
 declare global {
@@ -36,7 +39,9 @@ declare global {
     google?: {
       accounts?: {
         oauth2?: {
-          initTokenClient: (config: GoogleTokenClientConfig) => GoogleTokenClient;
+          initTokenClient: (
+            config: GoogleTokenClientConfig,
+          ) => GoogleTokenClient;
           revoke: (accessToken: string, done?: () => void) => void;
         };
       };
@@ -65,7 +70,9 @@ export type RequestGoogleAccessTokenOptions = {
 };
 
 export type InMemoryGoogleTokenClient = {
-  getAccessToken: (options?: RequestGoogleAccessTokenOptions) => Promise<string>;
+  getAccessToken: (
+    options?: RequestGoogleAccessTokenOptions,
+  ) => Promise<string>;
   getCurrentToken: () => GoogleAccessToken | null;
   clearToken: () => void;
   revokeToken: () => Promise<void>;
@@ -109,9 +116,11 @@ export function createGoogleTokenClient(
       scope,
       callback: () => undefined,
       include_granted_scopes: true,
-      error_callback: (error) => {
+      error_callback: error => {
         pendingRequest = null;
-        pendingReject?.(new Error(`Google authorization failed: ${String(error)}`));
+        pendingReject?.(
+          new Error(`Google authorization failed: ${String(error)}`),
+        );
         pendingReject = null;
       },
     });
@@ -119,14 +128,16 @@ export function createGoogleTokenClient(
     return tokenClient;
   };
 
-  const requestToken = async (requestOptions: RequestGoogleAccessTokenOptions = {}) => {
+  const requestToken = async (
+    requestOptions: RequestGoogleAccessTokenOptions = {},
+  ) => {
     await loadGoogleIdentityServices();
 
     return new Promise<string>((resolve, reject) => {
       const client = getTokenClient();
       pendingReject = reject;
 
-      client.callback = (response) => {
+      client.callback = response => {
         pendingRequest = null;
         pendingReject = null;
 
@@ -136,7 +147,11 @@ export function createGoogleTokenClient(
         }
 
         if (!response.access_token) {
-          reject(new Error('Google Identity Services did not return an access token.'));
+          reject(
+            new Error(
+              'Google Identity Services did not return an access token.',
+            ),
+          );
           return;
         }
 
@@ -157,7 +172,7 @@ export function createGoogleTokenClient(
   };
 
   return {
-    getAccessToken: (requestOptions) => {
+    getAccessToken: requestOptions => {
       if (hasValidToken()) {
         const validToken = currentToken!;
         return Promise.resolve(validToken.accessToken);
@@ -172,7 +187,7 @@ export function createGoogleTokenClient(
       pendingRequest = null;
     },
     revokeToken: () =>
-      new Promise((resolve) => {
+      new Promise(resolve => {
         const accessToken = currentToken?.accessToken;
         currentToken = null;
         pendingRequest = null;
@@ -213,7 +228,9 @@ function getRequiredGoogleClientId(): string {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   if (!clientId) {
-    throw new Error('Missing VITE_GOOGLE_CLIENT_ID. Configure it before using Google Drive.');
+    throw new Error(
+      'Missing VITE_GOOGLE_CLIENT_ID. Configure it before using Google Drive.',
+    );
   }
 
   return clientId;
@@ -240,14 +257,22 @@ async function loadGoogleIdentityServices(): Promise<void> {
         resolve();
         return;
       }
-      reject(new Error('Google Identity Services loaded, but OAuth is not available.'));
+      reject(
+        new Error(
+          'Google Identity Services loaded, but OAuth is not available.',
+        ),
+      );
     };
 
     script.addEventListener('load', finish, { once: true });
-    script.addEventListener('error', () => {
-      window.clearTimeout(timeout);
-      reject(new Error('Failed to load Google Identity Services.'));
-    }, { once: true });
+    script.addEventListener(
+      'error',
+      () => {
+        window.clearTimeout(timeout);
+        reject(new Error('Failed to load Google Identity Services.'));
+      },
+      { once: true },
+    );
 
     if (!existingScript) {
       script.src = GOOGLE_IDENTITY_SERVICES_SRC;
