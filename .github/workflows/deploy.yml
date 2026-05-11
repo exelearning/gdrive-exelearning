@@ -31,7 +31,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Resolve eXeLearning editor ref
+        id: editor
+        run: |
+          if [ -f .editor-version ]; then
+            REF=$(cat .editor-version | tr -d '[:space:]')
+            echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download eXeLearning editor
+        env:
+          EXELEARNING_EDITOR_REF: ${{ steps.editor.outputs.ref }}
         run: make download-editor
 
       - name: Build
