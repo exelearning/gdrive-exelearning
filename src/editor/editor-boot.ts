@@ -101,23 +101,6 @@ export async function buildEditorBootHtml(
   })};`;
   dom.head.insertBefore(config, base.nextSibling);
 
-  // TinyMCE 5 autodetects its baseURL by scanning <script> tags for one whose
-  // src ends in tinymce.min.js. Under `iframe srcdoc` on Firefox that
-  // autodetection ends up empty, and later URI.toAbsPath(undefined, …) throws
-  // `can't access property "split", e is undefined` the first time a plugin
-  // script's onload fires. Preset window.tinymce.baseURL / tinyMCEPreInit
-  // so the loader never has to autodetect anything.
-  const tinymceBase = new URL('libs/tinymce_5/js/tinymce', editorBaseHref)
-    .toString()
-    .replace(/\/$/, '');
-  const tinymcePreset = dom.createElement('script');
-  tinymcePreset.textContent =
-    `window.tinymce = window.tinymce || {};` +
-    `window.tinymce.baseURL = ${JSON.stringify(tinymceBase)};` +
-    `window.tinymce.suffix = '.min';` +
-    `window.tinyMCEPreInit = window.tinyMCEPreInit || { base: ${JSON.stringify(tinymceBase)}, suffix: '.min', query: '' };`;
-  dom.head.insertBefore(tinymcePreset, config.nextSibling);
-
   // Defensive CSS to hide the editor's internal save / file menu / user menu
   // even if the editor reorders or recreates them after the initial render.
   const style = dom.createElement('style');
@@ -125,8 +108,22 @@ export async function buildEditorBootHtml(
   dom.head.append(style);
 
   // Bridge:
-  //   1. Forward Ctrl/Cmd+S to the parent.
-  //   2. Patch the editor's REQUEST_SAVE handler. The v4.0.0 EmbeddingBridge looks
+  //   1. Repair tinymce.documentBaseURL on Firefox-srcdoc. TinyMCE 5's
+  //      EditorManager.setup() reads document.location.href, which is
+  //      'about:srcdoc' inside an iframe srcdoc. Its URI parser sees the
+  //      'about:srcdoc' string, matches /^([\w-]+):([^/]{2})/ (where
+  //      [^/]{2} consumes "sr") and treats it as a fully-parsed URI,
+  //      leaving .path / .directory undefined. Every editor instance built
+  //      after that has a broken documentBaseURI, and the first toAbsolute()
+  //      against a relative URL crashes in toAbsPath with "can't access
+  //      property 'split', e is undefined" (Firefox-only — Chromium does
+  //      not surface this code path the same way). document.baseURI
+  //      reflects our <base href> and is a real http(s) URL, so we
+  //      re-anchor tinymce.documentBaseURL with it before any
+  //      tinymce.init() call. See
+  //      https://github.com/exelearning/exelearning/issues/1799.
+  //   2. Forward Ctrl/Cmd+S to the parent.
+  //   3. Patch the editor's REQUEST_SAVE handler. The v4.0.0 EmbeddingBridge looks
   //      up project.exportToElpxBlob / project._yjsBridge.exporter.exportToBlob,
   //      but those methods do not exist in this build (the real export path is
   //      project.exportToElpxViaYjs → bridge.exportToElpx, which in turn calls
@@ -137,9 +134,13 @@ export async function buildEditorBootHtml(
   const bridge = dom.createElement('script');
   bridge.textContent = `
 (() => {
+  if (window.tinymce && document.baseURI) {
+    try { window.tinymce.documentBaseURL = document.baseURI; } catch (_) {}
+  }
   console.log('[gdrive-exelearning][diag]', {
     href: document.location.href,
     baseURI: document.baseURI,
+    tinymceDocumentBaseURL: (window.tinymce && window.tinymce.documentBaseURL) || null,
     tinymceBaseURL: (window.tinymce && window.tinymce.baseURL) || null,
     ua: navigator.userAgent,
   });
