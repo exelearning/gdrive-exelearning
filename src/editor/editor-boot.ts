@@ -101,6 +101,23 @@ export async function buildEditorBootHtml(
   })};`;
   dom.head.insertBefore(config, base.nextSibling);
 
+  // TinyMCE 5 autodetects its baseURL by scanning <script> tags for one whose
+  // src ends in tinymce.min.js. Under `iframe srcdoc` on Firefox that
+  // autodetection ends up empty, and later URI.toAbsPath(undefined, …) throws
+  // `can't access property "split", e is undefined` the first time a plugin
+  // script's onload fires. Preset window.tinymce.baseURL / tinyMCEPreInit
+  // so the loader never has to autodetect anything.
+  const tinymceBase = new URL('libs/tinymce_5/js/tinymce', editorBaseHref)
+    .toString()
+    .replace(/\/$/, '');
+  const tinymcePreset = dom.createElement('script');
+  tinymcePreset.textContent =
+    `window.tinymce = window.tinymce || {};` +
+    `window.tinymce.baseURL = ${JSON.stringify(tinymceBase)};` +
+    `window.tinymce.suffix = '.min';` +
+    `window.tinyMCEPreInit = window.tinyMCEPreInit || { base: ${JSON.stringify(tinymceBase)}, suffix: '.min', query: '' };`;
+  dom.head.insertBefore(tinymcePreset, config.nextSibling);
+
   // Defensive CSS to hide the editor's internal save / file menu / user menu
   // even if the editor reorders or recreates them after the initial render.
   const style = dom.createElement('style');
@@ -120,6 +137,12 @@ export async function buildEditorBootHtml(
   const bridge = dom.createElement('script');
   bridge.textContent = `
 (() => {
+  console.log('[gdrive-exelearning][diag]', {
+    href: document.location.href,
+    baseURI: document.baseURI,
+    tinymceBaseURL: (window.tinymce && window.tinymce.baseURL) || null,
+    ua: navigator.userAgent,
+  });
   const send = (message) => {
     try {
       window.parent.postMessage(message, '*');
