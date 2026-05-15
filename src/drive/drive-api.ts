@@ -36,6 +36,8 @@ export type DriveFileMetadata = {
   parents?: string[];
   resourceKey?: string;
   webViewLink?: string;
+  thumbnailLink?: string;
+  hasThumbnail?: boolean;
   capabilities?: {
     canDownload?: boolean;
     canEdit?: boolean;
@@ -104,7 +106,7 @@ export async function getFileMetadata(
   const normalized = normalizeFileRequest(fileIdOrOptions, options);
   const fields =
     options?.fields ??
-    'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit)';
+    'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,thumbnailLink,hasThumbnail,capabilities(canDownload,canEdit)';
   const url = buildDriveUrl(
     `${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}`,
     {
