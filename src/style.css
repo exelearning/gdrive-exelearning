@@ -217,10 +217,42 @@ dd {
   flex-shrink: 0;
 }
 
-.editor-actions .drive-icon {
+.editor-actions .drive-icon,
+.editor-actions .exelearning-icon {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+
+.editor-back {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #5f6368;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.editor-back:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.editor-back:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+.editor-back .back-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .editor-host {

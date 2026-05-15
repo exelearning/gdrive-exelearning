@@ -43,7 +43,7 @@ export async function renderViewerMode(
   const editButton = requiredElement(root, '#edit-file') as HTMLButtonElement;
   const closeButton = requiredElement(
     root,
-    '#close-editor',
+    '#back-to-drive',
   ) as HTMLButtonElement;
   const host = requiredElement(root, '#viewer-host');
 
