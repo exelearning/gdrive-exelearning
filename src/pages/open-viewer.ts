@@ -1,4 +1,5 @@
 import { requestAccessToken } from '../auth/google-token-client';
+import { ELPX_MIME_TYPE } from '../config';
 import { fetchEditableDriveFile } from '../drive/drive-download';
 import { publishElpxThumbnailFromEntries } from '../drive/drive-thumbnail';
 import { createPackageIframe } from '../elpx/iframe-renderer';
@@ -143,9 +144,13 @@ export async function renderViewerMode(
       validation = validatePackageFallback(metadata.name);
     }
 
-    if (entries && metadata.hasThumbnail !== true) {
-      // Backfill the Drive native preview for any `.elpx` that does not have
-      // our screenshot.png cached as `thumbnailLink` yet. Fire-and-forget.
+    const needsThumbnail = metadata.hasThumbnail !== true;
+    const needsMimeFix = metadata.mimeType !== ELPX_MIME_TYPE;
+    if (entries && (needsThumbnail || needsMimeFix)) {
+      // Backfill on first open so files uploaded to Drive outside this app
+      // (where Drive auto-detects the .elpx as application/zip and shows its
+      // generic ZIP preview) get retagged with our custom MIME plus the
+      // screenshot.png as `thumbnailLink`. Fire-and-forget.
       void publishElpxThumbnailFromEntries({
         token,
         fileId: metadata.id,
