@@ -45,7 +45,7 @@ export async function renderEditorMode(
   ) as HTMLButtonElement;
   const closeButton = requiredElement(
     root,
-    '#close-editor',
+    '#back-to-drive',
   ) as HTMLButtonElement;
   const { fileId, resourceKey } = ctx;
   const savingModal = new SavingModal();
