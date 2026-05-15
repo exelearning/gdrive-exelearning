@@ -15,16 +15,15 @@ export const DRIVE_ICON_SVG = `
 </svg>`;
 
 /**
- * Mirrors `public/icons/exelearning.svg` so the toolbar can render the
- * eXeLearning mark without a separate request. Keep the two in sync if the
- * brand mark changes.
+ * Mirrors `public/icons/exelearning.svg` (the eXeLearning brand mark — a
+ * teal "X" glyph) so the toolbar can render it without a separate request.
+ * Keep the two in sync if the brand mark changes upstream.
  */
 export const EXELEARNING_ICON_SVG = `
-<svg class="exelearning-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-  <rect width="64" height="64" rx="8" fill="#f5f7fb"/>
-  <path d="M18 14h22l8 8v28H18z" fill="#ffffff" stroke="#2f4b7c" stroke-width="3"/>
-  <path d="M40 14v10h10" fill="none" stroke="#2f4b7c" stroke-width="3"/>
-  <path d="M25 33h18M25 41h14" stroke="#2d8a57" stroke-width="4" stroke-linecap="round"/>
+<svg class="exelearning-icon" viewBox="0 -0.519 60.17152 60.17152" aria-hidden="true" focusable="false">
+  <g transform="translate(-109.80208,-121.17917)">
+    <path d="m 120.63912,121.17916 c 2.50296,0 5.17684,0.9102 8.02111,2.7306 2.78765,1.7635 6.62755,4.89233 11.5197,9.38644 8.4193,-7.05406 12.91034,-8.64301 17.23363,-8.64301 2.78765,0 5.17684,0.76798 7.16783,2.30394 3.66792,2.80477 4.27963,9.21022 1.71,13.42157 -2.04787,3.35637 -4.72175,6.96873 -8.02111,10.83701 7.50914,8.53308 11.70332,14.673 11.70332,18.88279 0,3.01492 -0.93874,5.31892 -2.81596,6.91171 -1.93411,1.59279 -4.35187,2.38919 -7.25303,2.38919 -4.38044,0 -11.24849,-3.3237 -19.72468,-10.43464 -4.83526,4.2664 -8.64685,7.22471 -11.43424,8.87439 -2.84453,1.64967 -5.54672,2.47465 -8.10657,2.47465 -3.41323,0 -6.0585,-1.1094 -7.93578,-3.32793 -1.93418,-2.27568 -2.90126,-4.9493 -2.90126,-8.02111 0,-1.99126 0.28443,-3.72613 0.85331,-5.20541 0.56888,-1.47903 1.62129,-3.1287 3.15725,-4.94904 1.53596,-1.87748 3.98213,-4.46563 7.33845,-7.76525 -3.24254,-3.29936 -5.63181,-5.94471 -7.1678,-7.93576 -1.59284,-2.04795 -2.67369,-3.83992 -3.24257,-5.37588 -0.62577,-1.53596 -0.93864,-3.24257 -0.93864,-5.11987 0,-1.99107 0.42664,-3.8399 1.27995,-5.54651 0.85334,-1.76353 2.10484,-3.18572 3.7546,-4.26658 1.64973,-1.08087 3.58391,-1.6213 5.80249,-1.6213 z" fill="#26ddc7"/>
+  </g>
 </svg>`;
 
 /**
