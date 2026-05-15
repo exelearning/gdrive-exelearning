@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ViewerSession } from './viewer-session';
 
-function entriesOf(items: Array<[string, Uint8Array]>): Map<string, Uint8Array> {
+function entriesOf(
+  items: Array<[string, Uint8Array]>,
+): Map<string, Uint8Array> {
   return new Map(items);
 }
 

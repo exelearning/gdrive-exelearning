@@ -71,9 +71,7 @@ async function registerRuntimeWorker(): Promise<RuntimeWorker> {
   return worker;
 }
 
-function waitForActive(
-  registration: ServiceWorkerRegistration,
-): Promise<void> {
+function waitForActive(registration: ServiceWorkerRegistration): Promise<void> {
   if (registration.active && navigator.serviceWorker.controller) {
     return Promise.resolve();
   }

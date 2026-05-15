@@ -1,8 +1,5 @@
 import { requestAccessToken } from '../auth/google-token-client';
-import {
-  createFile,
-  type DriveFileMetadata,
-} from '../drive/drive-api';
+import { createFile, type DriveFileMetadata } from '../drive/drive-api';
 import { fetchEditableDriveFile } from '../drive/drive-download';
 import type { OpenedDriveFileSnapshot } from '../drive/drive-state';
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';

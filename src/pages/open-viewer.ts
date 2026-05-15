@@ -7,8 +7,8 @@ import { ViewerSession } from '../elpx/viewer-session';
 import { readPackage, ZipReadError } from '../elpx/zip-reader';
 import {
   ensureRuntimeWorker,
-  registerSession,
   type RuntimeWorker,
+  registerSession,
   unregisterSession,
 } from '../sw/service-worker-client';
 import {
@@ -40,10 +40,7 @@ export async function renderViewerMode(
     root,
     '#authorize-open',
   ) as HTMLButtonElement;
-  const editButton = requiredElement(
-    root,
-    '#edit-file',
-  ) as HTMLButtonElement;
+  const editButton = requiredElement(root, '#edit-file') as HTMLButtonElement;
   const closeButton = requiredElement(
     root,
     '#close-editor',
@@ -220,9 +217,9 @@ function isLegacyElpFilename(name: string): boolean {
  * keep the same shape as `validatePackage` so the renderer branches stay
  * uniform.
  */
-function validatePackageFallback(filename: string): ReturnType<
-  typeof validatePackage
-> {
+function validatePackageFallback(
+  filename: string,
+): ReturnType<typeof validatePackage> {
   const isLegacyByExtension = filename.toLowerCase().endsWith('.elp');
   return {
     valid: false,

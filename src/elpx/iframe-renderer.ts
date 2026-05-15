@@ -32,9 +32,7 @@ export interface IframeOptions {
   title: string;
 }
 
-export function createPackageIframe(
-  options: IframeOptions,
-): HTMLIFrameElement {
+export function createPackageIframe(options: IframeOptions): HTMLIFrameElement {
   const iframe = document.createElement('iframe');
   iframe.className = 'viewer-frame';
   iframe.title = options.title;
