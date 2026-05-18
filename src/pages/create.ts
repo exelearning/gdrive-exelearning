@@ -36,7 +36,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   ) as HTMLButtonElement;
   const closeButton = requiredElement(
     root,
-    '#close-editor',
+    '#back-to-drive',
   ) as HTMLButtonElement;
   const savingModal = new SavingModal();
 
