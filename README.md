@@ -3,7 +3,6 @@
 [![Deploy to GitHub Pages](https://github.com/exelearning/gdrive-exelearning/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/exelearning/gdrive-exelearning/actions/workflows/deploy.yml)
 ![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/exelearning/gdrive-exelearning)
-![Open Issues](https://img.shields.io/github/issues/exelearning/gdrive-exelearning)
 
 Edit eXeLearning `.elpx` (and legacy `.elp`) projects directly from Google
 Drive. The bundled static editor opens in the browser, the file stays in
@@ -64,3 +63,11 @@ integration), see [`SELF-HOSTING.md`](SELF-HOSTING.md).
 See [`AGENTS.md`](AGENTS.md) for the protocol details (postMessage
 shape, hideUI, srcdoc/`<base>` trick, the `REQUEST_SAVE` patch for
 v4.0.0). PRs welcome.
+
+## Issues and Support
+
+Issue tracking for this app is centralized in the main
+[`exelearning/exelearning`](https://github.com/exelearning/exelearning) repository.
+Please [open new issues there](https://github.com/exelearning/exelearning/issues/new),
+and browse [existing `gdrive`-labeled issues](https://github.com/exelearning/exelearning/issues?q=is%3Aissue+label%3Agdrive)
+before reporting a bug or requesting a feature.
