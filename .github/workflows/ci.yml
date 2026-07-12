@@ -42,3 +42,20 @@ jobs:
 
       - name: Run unit tests
         run: npm test
+
+      - name: Download eXeLearning editor
+        run: make download-editor EXELEARNING_EDITOR_REF="$(tr -d '[:space:]' < .editor-version)"
+
+      - name: Build production bundle
+        run: npm run build
+        env:
+          VITE_GOOGLE_CLIENT_ID: ci-client-id.apps.googleusercontent.com
+          VITE_GOOGLE_API_KEY: ci-api-key
+
+      - name: Verify production bundle
+        run: |
+          test -f dist/index.html
+          test -f dist/404.html
+          test -f dist/open/index.html
+          test -f dist/create/index.html
+          test -n "$(find dist/editor -type f -print -quit)"
