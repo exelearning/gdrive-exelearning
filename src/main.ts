@@ -1,6 +1,7 @@
 import { renderCreate } from './pages/create';
 import { renderHome } from './pages/home';
 import { renderOpen } from './pages/open';
+import { renderPublicView } from './pages/view';
 import './style.css';
 
 const root = document.querySelector<HTMLElement>('#app');
@@ -14,6 +15,8 @@ try {
     await renderOpen(root);
   } else if (path === '/create') {
     await renderCreate(root);
+  } else if (path === '/view') {
+    await renderPublicView(root);
   } else {
     renderHome(root);
   }

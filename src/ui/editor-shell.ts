@@ -15,6 +15,7 @@ export function renderEditorPage(root: HTMLElement, statusText: string): void {
         <p id="status" class="editor-status" role="status" aria-live="polite">${escapeHtml(statusText)}</p>
         <div class="editor-actions">
           <button id="authorize-open" type="button" class="btn-primary">Authorize and open</button>
+          <button id="share-link" type="button" class="btn-secondary" disabled>Share public link</button>
           <button id="save-drive" type="button" class="btn-primary" disabled>${DRIVE_ICON_SVG}<span>Save to Drive</span></button>
         </div>
       </header>

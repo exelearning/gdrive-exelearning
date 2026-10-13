@@ -28,6 +28,10 @@ Live deploy: <https://exelearning.github.io/gdrive-exelearning/>
   save, the user is offered "overwrite", "save as copy" or "cancel".
 - **Read-only fallback**: if Drive reports `canEdit=false`, the editor
   opens with the save button disabled.
+- **Public links**: **Share public link** grants "anyone with the link"
+  read access on the Drive file and hands you a `/view?fileId=…` URL.
+  Students open it without a Google account; the `.elpx` is rendered in
+  their browser, so Drive only stores the file.
 
 ## Usage
 
@@ -39,7 +43,9 @@ end users see eXeLearning right next to Google's own apps in Drive:
    straight to the editor.
 3. Edit the project. Use the **Save to Drive** button or `Ctrl/Cmd+S`.
 4. Drive metadata (`modifiedTime`, thumbnail, custom mime type) is
-   updated to reflect the new content.
+. Click **Share public link** (preview or editor toolbar) to get a
+   read-only URL for students. The file becomes readable by anyone who
+   has the link.
 
 To create a new project, pick **New → eXeLearning** from any Drive
 folder; the editor opens with a blank document and the file is created
@@ -50,6 +56,10 @@ in the same folder.
 - The app is static and runs entirely in the browser; there is no
   server-side token exchange or backend persistence.
 - There is no collaborative editing.
+- Public links expose the whole `.elpx` for download, not just the
+  rendered HTML, and they need the deployment to ship an API key
+  (`VITE_GOOGLE_API_KEY`). Google Workspace domains that forbid "anyone
+  with the link" sharing cannot use them.
 - Large `.elpx` files are constrained by browser memory and Drive
   upload limits.
 

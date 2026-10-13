@@ -16,6 +16,7 @@ import {
   requiredElement,
   setEditorTitle,
 } from '../ui/editor-shell';
+import { enableShareButton } from '../ui/share-link';
 import { formatError, StatusView } from '../ui/status';
 
 export interface EditorModeContext {
@@ -164,6 +165,12 @@ export async function renderEditorMode(
     }
     saveButton.disabled = !canEdit;
     saveButton.addEventListener('click', () => void save());
+    if (!isLegacyElp && metadata.capabilities?.canShare !== false) {
+      enableShareButton(
+        requiredElement(root, '#share-link') as HTMLButtonElement,
+        { token, fileId: metadata.id, resourceKey, status },
+      );
+    }
 
     async function save(): Promise<void> {
       if (!canEdit) {

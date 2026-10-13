@@ -41,6 +41,7 @@ export type DriveFileMetadata = {
   capabilities?: {
     canDownload?: boolean;
     canEdit?: boolean;
+    canShare?: boolean;
   };
 };
 
@@ -106,7 +107,7 @@ export async function getFileMetadata(
   const normalized = normalizeFileRequest(fileIdOrOptions, options);
   const fields =
     options?.fields ??
-    'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,thumbnailLink,hasThumbnail,capabilities(canDownload,canEdit)';
+    'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,thumbnailLink,hasThumbnail,capabilities(canDownload,canEdit,canShare)';
   const url = buildDriveUrl(
     `${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}`,
     {
@@ -218,7 +219,7 @@ export async function createFile(
     uploadType: 'multipart',
     fields:
       normalized.fields ??
-      'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit)',
+      'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit,canShare)',
     supportsAllDrives: 'true',
   });
   const metadata = {
@@ -523,7 +524,7 @@ function normalizeCreateFileOptions(
         : undefined,
     signal: options.signal,
     fields:
-      'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit)',
+      'id,name,mimeType,modifiedTime,size,md5Checksum,version,parents,resourceKey,webViewLink,capabilities(canDownload,canEdit,canShare)',
   };
 }
 
@@ -569,4 +570,94 @@ function getErrorMessage(details: unknown, fallback: string): string {
   }
 
   return fallback || 'Google Drive request failed.';
+}
+
+// ---------------------------------------------------------------------------
+// Public links (students-facing viewer)
+// ---------------------------------------------------------------------------
+
+export type PublicDriveRequestOptions = {
+  apiKey: string;
+  fileId: string;
+  resourceKey?: string;
+  signal?: AbortSignal;
+};
+
+/**
+ * Share a file as "anyone with the link can view". `allowFileDiscovery:
+ * false` keeps it out of search results. Works under the `drive.file` scope
+ * for files this app opened or created.
+ */
+export async function createAnyoneReaderPermission(
+  options: LegacyDriveRequestOptions,
+): Promise<{ id: string }> {
+  const normalized = normalizeFileRequest(options);
+  const url = buildDriveUrl(
+    `${DRIVE_API_BASE}/files/${encodeURIComponent(normalized.fileId)}/permissions`,
+    { fields: 'id', supportsAllDrives: 'true' },
+  );
+  const headers = buildDriveHeaders(normalized);
+  headers.set('Content-Type', 'application/json; charset=UTF-8');
+  return parseJsonResponse<{ id: string }>(
+    await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        type: 'anyone',
+        role: 'reader',
+        allowFileDiscovery: false,
+      }),
+      signal: normalized.signal,
+    }),
+  );
+}
+
+/** Metadata of a publicly shared file, authenticated with the API key only. */
+export async function getPublicFileMetadata(
+  options: PublicDriveRequestOptions,
+): Promise<DriveFileMetadata> {
+  const url = buildDriveUrl(
+    `${DRIVE_API_BASE}/files/${encodeURIComponent(options.fileId)}`,
+    {
+      fields:
+        'id,name,mimeType,size,md5Checksum,version,modifiedTime,capabilities(canDownload)',
+      supportsAllDrives: 'true',
+      key: options.apiKey,
+    },
+  );
+  return parseJsonResponse<DriveFileMetadata>(
+    await fetch(url, {
+      method: 'GET',
+      headers: buildPublicHeaders(options),
+      signal: options.signal,
+    }),
+  );
+}
+
+/** Bytes of a publicly shared file, authenticated with the API key only. */
+export async function downloadPublicFile(
+  options: PublicDriveRequestOptions,
+): Promise<ArrayBuffer> {
+  const url = buildDriveUrl(
+    `${DRIVE_API_BASE}/files/${encodeURIComponent(options.fileId)}`,
+    { alt: 'media', supportsAllDrives: 'true', key: options.apiKey },
+  );
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: buildPublicHeaders(options),
+    signal: options.signal,
+  });
+  await assertDriveResponse(response);
+  return response.arrayBuffer();
+}
+
+function buildPublicHeaders(options: PublicDriveRequestOptions): Headers {
+  const headers = new Headers();
+  if (options.resourceKey) {
+    headers.set(
+      'X-Goog-Drive-Resource-Keys',
+      `${options.fileId}/${options.resourceKey}`,
+    );
+  }
+  return headers;
 }
