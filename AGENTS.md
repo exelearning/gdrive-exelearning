@@ -271,11 +271,13 @@ resolves: it replaces `handleSaveRequest` with one that runs
 
 ## Route conventions
 
-- `/` is the home page:
-  - app title
-  - authorize Google button
-  - disabled/open-later Drive Picker button
-  - editor installation diagnostics
+- `/` is the home page, styled like a Google Drive entry point (plain white,
+  pill buttons, 1 px borders, no marketing hero):
+  - app title and one sentence on what the app does
+  - "Connect Google Drive" button; after authorization it is replaced by
+    "Open Google Drive" and "New project in Drive"
+  - "How it works" in three steps, using Drive's own wording
+  - a "System check" line (Google client, editor, connection)
 - `/open` is the Google Drive Open URL endpoint.
 - `/create` is the Google Drive New URL endpoint.
 - `/view` is the public, no-login viewer (`?fileId=…[&resourceKey=…]`). It
