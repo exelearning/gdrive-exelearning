@@ -56,3 +56,28 @@ export function describePublicViewError(error: unknown): string {
   }
   return error instanceof Error ? error.message : String(error);
 }
+
+export function buildDriveFileUrl(fileId: string): string {
+  return `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/view`;
+}
+
+export interface ShareErrorDescription {
+  message: string;
+  hint?: string;
+}
+
+/**
+ * Google Workspace domains can forbid "anyone with the link"; Drive then
+ * answers 403 to `permissions.create`. Keep Google's own wording and add the
+ * fallback teachers actually have: share inside the domain from Drive.
+ */
+export function describeShareError(error: unknown): ShareErrorDescription {
+  const message = error instanceof Error ? error.message : String(error);
+  if (error instanceof DriveApiError && error.status === 403) {
+    return {
+      message,
+      hint: 'Your Google Workspace administrator may restrict "Anyone with the link". You can still share the file with people in your domain from Google Drive; they open it with Open with → eXeLearning.',
+    };
+  }
+  return { message };
+}

@@ -78,7 +78,7 @@ export function renderErrorCard(host: HTMLElement, message: string): void {
   `;
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, char => {
     const entities: Record<string, string> = {
       '&': '&amp;',
