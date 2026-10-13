@@ -74,3 +74,11 @@ After the first deploy:
 3. Click **Authorize and open**, edit, and **Save to Drive**. Drive
    should show the updated `modifiedTime` and the editor's screenshot
    as the file thumbnail.
+
+## Social preview (Open Graph)
+
+`index.html` carries Open Graph and Twitter Card tags pointing at
+`https://exelearning.github.io/gdrive-exelearning/` and its
+`og-image.png` (1200×630, in `public/`). On a fork, replace those two
+absolute URLs with your own origin so chat apps and social networks pick up
+your deployment's preview.
