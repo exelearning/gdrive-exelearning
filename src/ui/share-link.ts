@@ -5,6 +5,7 @@ import {
   buildPublicViewUrl,
   describeShareError,
 } from '../drive/public-link';
+import { t } from '../i18n';
 import { ShareDialog } from './dialogs';
 import type { StatusView } from './status';
 
@@ -28,7 +29,7 @@ export function enableShareButton(
   ctx: ShareContext,
 ): void {
   if (!GOOGLE_API_KEY) {
-    button.title = 'Public links are not configured on this deployment.';
+    button.title = t('toolbar.shareUnavailable');
     return;
   }
   const dialog = new ShareDialog();
@@ -45,7 +46,7 @@ export function enableShareButton(
       return;
     }
     try {
-      ctx.status.set('Sharing with anyone with the link…');
+      ctx.status.set(t('status.sharing'));
       await createAnyoneReaderPermission({
         token: ctx.token,
         fileId: ctx.fileId,
@@ -56,7 +57,7 @@ export function enableShareButton(
         ctx.fileId,
         ctx.resourceKey,
       );
-      ctx.status.set('Public link ready.', 'success');
+      ctx.status.set(t('status.linkReady'), 'success');
       dialog.showLink(ctx.filename, {
         url,
         driveUrl: buildDriveFileUrl(ctx.fileId),

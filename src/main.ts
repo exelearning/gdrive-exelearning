@@ -1,3 +1,4 @@
+import { initI18n } from './i18n';
 import { renderCreate } from './pages/create';
 import { renderHome } from './pages/home';
 import { renderOpen } from './pages/open';
@@ -10,6 +11,7 @@ if (!root) {
 }
 
 try {
+  await initI18n();
   const path = normalizeRoute(window.location.pathname);
   if (path === '/open') {
     await renderOpen(root);

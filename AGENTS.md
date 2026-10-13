@@ -321,6 +321,13 @@ resolves: it replaces `handleSaveRequest` with one that runs
 - Use structured APIs for JSON parsing and request building.
 - Avoid ad hoc string manipulation except where building multipart upload bodies or injected iframe bootstrap HTML requires it.
 - Keep comments short and only where they explain non-obvious integration behavior.
+- Every user-facing string goes through `t()` from `src/i18n`. Keys live in
+  `src/i18n/locales/en.ts`; the other eleven locale files are typed against
+  it, so adding a key means adding it to all of them (typecheck fails
+  otherwise). Locale resolution is `?hl=` → remembered choice → browser
+  languages → `en`, mirroring the eXeLearning static editor; pass
+  `currentLocale()` to the editor's embedding config. Translations other
+  than English were machine-produced and are marked for native review.
 - Do not add broad abstractions until there are at least two real call sites that benefit from them.
 
 ## GitHub Pages deployment

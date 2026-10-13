@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 /**
  * Client-side bridge to the eXeLearning runtime Service Worker.
  *
@@ -40,9 +41,7 @@ export async function ensureRuntimeWorker(): Promise<RuntimeWorker> {
     return pendingRegistration;
   }
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-    throw new Error(
-      'Service Workers are not available in this browser context.',
-    );
+    throw new Error(t('error.swUnavailable'));
   }
   pendingRegistration = registerRuntimeWorker().finally(() => {
     pendingRegistration = null;
@@ -109,7 +108,7 @@ export async function registerSession(
     worker.registration.waiting ??
     worker.registration.installing;
   if (!target) {
-    throw new Error('The eXeLearning Service Worker is not active.');
+    throw new Error(t('error.swInactive'));
   }
   const files: Array<{ path: string; mime: string; bytes: ArrayBuffer }> = [];
   for (const [path, file] of session.data.files) {
@@ -176,9 +175,7 @@ function postWithReply(
       if (data?.ok) {
         resolve();
       } else {
-        reject(
-          new Error(data?.error ?? 'Service Worker rejected the message.'),
-        );
+        reject(new Error(data?.error ?? t('error.swRejected')));
       }
     };
     try {

@@ -9,6 +9,7 @@ import {
 import { publishElpxThumbnail } from '../drive/drive-thumbnail';
 import { saveDriveFile } from '../drive/drive-upload';
 import { EditorFrame } from '../editor/editor-frame';
+import { t } from '../i18n';
 import { confirmOverwriteRemoteChange, SavingModal } from '../ui/dialogs';
 import {
   closeEditor,
@@ -22,12 +23,12 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const state = parseDriveStateFromParams(params, 'create');
   if (state.action !== 'create') {
-    throw new Error('This endpoint only supports Google Drive create actions.');
+    throw new Error(t('error.createOnly'));
   }
   const createState = state;
   cleanCreateUrl(createState);
 
-  renderEditorPage(root, 'Connecting to Google Drive…');
+  renderEditorPage(root, t('status.connecting'));
   const status = new StatusView(requiredElement(root, '#status'));
   const saveButton = requiredElement(root, '#save-drive') as HTMLButtonElement;
   const openButton = requiredElement(
@@ -40,7 +41,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
   ) as HTMLButtonElement;
   const savingModal = new SavingModal();
 
-  openButton.textContent = 'Authorize and create';
+  openButton.textContent = t('toolbar.authorizeCreate');
   closeButton.addEventListener('click', () => closeEditor());
 
   openButton.addEventListener('click', () => {
@@ -66,19 +67,19 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
         return;
       }
       openButton.disabled = false;
-      status.set('Click "Authorize and create" to continue.');
+      status.set(t('status.clickAuthorizeCreate'));
     }
   }
 
   async function createInDrive(prompt: 'none' | 'consent'): Promise<void> {
-    status.set('Requesting Google authorization…');
+    status.set(t('status.requestingAuth'));
     const token = await requestAccessToken({
       prompt,
       interactive: prompt === 'consent',
     });
     openButton.hidden = true;
 
-    status.set('Loading blank .elpx template…');
+    status.set(t('status.loadingTemplate'));
     const templateResponse = await fetch(BLANK_TEMPLATE_PATH);
     if (!templateResponse.ok) {
       throw new Error(`Blank template is missing at ${BLANK_TEMPLATE_PATH}.`);
@@ -89,7 +90,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     const driveBytes = await templateResponse.clone().arrayBuffer();
     const editorBytes = await templateResponse.arrayBuffer();
 
-    status.set('Creating Google Drive file…');
+    status.set(t('status.creatingFile'));
     const filename = await pickUntitledFilename(token, createState.folderId);
     const created = await createFile({
       token,
@@ -109,7 +110,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     };
     setEditorTitle(root, created.name);
 
-    status.set('Loading eXeLearning editor…');
+    status.set(t('status.loadingEditor'));
     const editor = new EditorFrame(requiredElement(root, '#editor-host'), {
       hideUI: { fileMenu: true, saveButton: true, userMenu: true },
     });
@@ -120,7 +121,7 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
         (message as { event?: string }).event === 'PROJECT_DIRTY'
       ) {
         dirty = true;
-        status.set('Unsaved changes.', 'warning');
+        status.set(t('status.unsaved'), 'warning');
       }
       if (message.type === 'REQUEST_SAVE') {
         void save();
@@ -130,16 +131,16 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
     await editor.load();
     await editor.openFile({ bytes: editorBytes, filename: created.name });
     saveButton.disabled = false;
-    status.set('Created.', 'success');
+    status.set(t('status.created'), 'success');
     saveButton.addEventListener('click', () => void save());
 
     async function save(): Promise<void> {
       try {
         saveButton.disabled = true;
         savingModal.showSaving();
-        status.set('Requesting updated .elpx from the editor…');
+        status.set(t('status.requestingSave'));
         const savePayload = await editor.requestSave();
-        status.set('Checking for remote changes…');
+        status.set(t('status.checkingRemote'));
         const saved = await saveDriveFile({
           token,
           snapshot,
@@ -147,14 +148,14 @@ export async function renderCreate(root: HTMLElement): Promise<void> {
           resolveConflict: () => confirmOverwriteRemoteChange(snapshot.name),
         });
         if (!saved) {
-          status.set('Save cancelled.', 'warning');
+          status.set(t('status.saveCancelled'), 'warning');
           savingModal.hide();
           return;
         }
         snapshot.modifiedTime = saved.modifiedTime;
         snapshot.version = saved.version;
         dirty = false;
-        status.set('Saved to Google Drive.', 'success');
+        status.set(t('status.saved'), 'success');
         savingModal.hide();
         void publishElpxThumbnail({
           token,

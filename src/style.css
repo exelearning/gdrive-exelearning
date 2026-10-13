@@ -764,6 +764,22 @@ dd {
   gap: 20px;
 }
 
+.home-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-lang select {
+  padding: 4px 8px;
+  border: 1px solid #c4c7c5;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #444746;
+  font: inherit;
+  font-size: 13px;
+}
+
 @media (max-width: 640px) {
   .home-nav {
     display: none;

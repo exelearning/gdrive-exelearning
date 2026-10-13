@@ -1,18 +1,15 @@
+import { t } from '../i18n';
 import { escapeHtml } from './viewer-shell';
 
 export type ConflictChoice = 'overwrite' | 'copy' | 'cancel';
 
 export function confirmOverwriteRemoteChange(filename: string): ConflictChoice {
-  const overwrite = window.confirm(
-    `"${filename}" has changed in Google Drive since it was opened.\n\nPress OK to overwrite the Drive file, or Cancel to choose another option.`,
-  );
+  const overwrite = window.confirm(t('conflict.changed', { filename }));
   if (overwrite) {
     return 'overwrite';
   }
 
-  const copy = window.confirm(
-    'Save the editor contents as a new copy instead? Press Cancel to stop saving.',
-  );
+  const copy = window.confirm(t('conflict.saveCopy'));
   return copy ? 'copy' : 'cancel';
 }
 
@@ -31,7 +28,7 @@ export class SavingModal {
   private hintNode: HTMLElement | null = null;
   private closeButton: HTMLButtonElement | null = null;
 
-  showSaving(message = 'Saving to Drive…'): void {
+  showSaving(message = t('saving.title')): void {
     this.ensureElement();
     this.element?.classList.remove('saving-modal--error');
     this.element?.classList.add('saving-modal--visible');
@@ -39,7 +36,7 @@ export class SavingModal {
       this.titleNode.textContent = message;
     }
     if (this.hintNode) {
-      this.hintNode.textContent = 'Please wait while the file is being saved.';
+      this.hintNode.textContent = t('saving.hint');
     }
     if (this.closeButton) {
       this.closeButton.hidden = true;
@@ -50,7 +47,7 @@ export class SavingModal {
     this.ensureElement();
     this.element?.classList.add('saving-modal--visible', 'saving-modal--error');
     if (this.titleNode) {
-      this.titleNode.textContent = 'Save failed';
+      this.titleNode.textContent = t('saving.failed');
     }
     if (this.hintNode) {
       this.hintNode.textContent = message;
@@ -88,7 +85,7 @@ export class SavingModal {
         <div class="saving-modal__spinner" aria-hidden="true"></div>
         <h3 class="saving-modal__title"></h3>
         <p class="saving-modal__hint"></p>
-        <button type="button" class="saving-modal__close" hidden>Close</button>
+        <button type="button" class="saving-modal__close" hidden>${t('common.close')}</button>
       </div>
     `;
     document.body.append(overlay);
@@ -130,20 +127,20 @@ export class ShareDialog {
   confirm(filename: string): Promise<boolean> {
     this.render({
       role: 'dialog',
-      titleHtml: `Share “${escapeHtml(filename)}”`,
+      titleHtml: escapeHtml(t('share.title', { filename })),
       bodyHtml: `
         <div class="share-dialog__section">
-          <div class="share-dialog__label">General access</div>
+          <div class="share-dialog__label">${t('share.generalAccess')}</div>
           <div class="share-dialog__access">
             <span class="share-dialog__avatar">${LOCK_ICON}</span>
-            <span class="share-dialog__access-text"><strong>Restricted</strong><small>Only people with access in Google Drive can open it.</small></span>
+            <span class="share-dialog__access-text"><strong>${t('share.restricted')}</strong><small>${t('share.restrictedHint')}</small></span>
           </div>
         </div>
-        <div class="share-dialog__callout">${GLOBE_ICON}<p><strong>A public link sets this to “Anyone with the link” as Viewer in Google Drive.</strong> Anyone on the internet who has the link can view the project and download the .elpx file, with no Google account.</p></div>
+        <div class="share-dialog__callout">${GLOBE_ICON}<p><strong>${t('share.calloutLead')}</strong> ${t('share.calloutBody')}</p></div>
       `,
       footerHtml: `
-        <button type="button" class="share-dialog__btn share-dialog__btn--text" data-action="cancel">Cancel</button>
-        <button type="button" class="share-dialog__btn share-dialog__btn--filled" data-action="confirm">Create public link</button>
+        <button type="button" class="share-dialog__btn share-dialog__btn--text" data-action="cancel">${t('share.cancel')}</button>
+        <button type="button" class="share-dialog__btn share-dialog__btn--filled" data-action="confirm">${t('share.create')}</button>
       `,
     });
     return new Promise(resolve => {
@@ -157,7 +154,7 @@ export class ShareDialog {
         )) {
           button.disabled = true;
         }
-        confirmButton.textContent = 'Sharing…';
+        confirmButton.textContent = t('share.sharing');
         this.settleConfirm(true);
       });
     });
@@ -167,28 +164,28 @@ export class ShareDialog {
   showLink(filename: string, link: ShareLinkView): void {
     this.render({
       role: 'dialog',
-      titleHtml: `Share “${escapeHtml(filename)}”`,
+      titleHtml: escapeHtml(t('share.title', { filename })),
       bodyHtml: `
         <div class="share-dialog__section">
-          <div class="share-dialog__label">General access</div>
+          <div class="share-dialog__label">${t('share.generalAccess')}</div>
           <div class="share-dialog__access">
             <span class="share-dialog__avatar share-dialog__avatar--public">${GLOBE_ICON}</span>
-            <span class="share-dialog__access-text"><strong>Anyone with the link</strong><small>Anyone on the internet with the link can view. No sign-in needed.</small></span>
-            <span class="share-dialog__role">Viewer</span>
+            <span class="share-dialog__access-text"><strong>${t('share.anyone')}</strong><small>${t('share.anyoneHint')}</small></span>
+            <span class="share-dialog__role">${t('share.viewer')}</span>
           </div>
         </div>
         <div class="share-dialog__section">
-          <label class="share-dialog__label" for="share-dialog-link">Public link for students</label>
+          <label class="share-dialog__label" for="share-dialog-link">${t('share.linkLabel')}</label>
           <div class="share-dialog__link">
             <input id="share-dialog-link" type="text" readonly value="${escapeHtml(link.url)}">
-            <button type="button" class="share-dialog__btn share-dialog__btn--outline" data-action="copy">${LINK_ICON}<span>Copy link</span></button>
+            <button type="button" class="share-dialog__btn share-dialog__btn--outline" data-action="copy">${LINK_ICON}<span>${t('share.copy')}</span></button>
           </div>
-          <small class="share-dialog__hint">To stop sharing, set General access back to Restricted in Google Drive.</small>
+          <small class="share-dialog__hint">${t('share.stopHint')}</small>
         </div>
       `,
       footerHtml: `
-        <a class="share-dialog__manage" href="${escapeHtml(link.driveUrl)}" target="_blank" rel="noopener">Manage in Google Drive${EXTERNAL_ICON}</a>
-        <button type="button" class="share-dialog__btn share-dialog__btn--filled" data-action="close">Done</button>
+        <a class="share-dialog__manage" href="${escapeHtml(link.driveUrl)}" target="_blank" rel="noopener">${t('share.manage')}${EXTERNAL_ICON}</a>
+        <button type="button" class="share-dialog__btn share-dialog__btn--filled" data-action="close">${t('share.done')}</button>
       `,
       splitFooter: true,
     });
@@ -203,13 +200,12 @@ export class ShareDialog {
   showError(message: string, hint?: string): void {
     this.render({
       role: 'alertdialog',
-      titleHtml: 'Couldn’t create a public link',
+      titleHtml: escapeHtml(t('share.errorTitle')),
       bodyHtml: `
-        <div class="share-dialog__callout share-dialog__callout--error">${ALERT_ICON}<p><strong>Google Drive refused the change.</strong> “${escapeHtml(message)}”</p></div>
+        <div class="share-dialog__callout share-dialog__callout--error">${ALERT_ICON}<p><strong>${t('share.errorLead')}</strong> “${escapeHtml(message)}”</p></div>
         ${hint ? `<p class="share-dialog__hint">${escapeHtml(hint)}</p>` : ''}
       `,
-      footerHtml:
-        '<button type="button" class="share-dialog__btn share-dialog__btn--filled" data-action="close">Close</button>',
+      footerHtml: `<button type="button" class="share-dialog__btn share-dialog__btn--filled" data-action="close">${t('common.close')}</button>`,
     });
   }
 
@@ -226,7 +222,7 @@ export class ShareDialog {
     try {
       await navigator.clipboard.writeText(url);
       const label = button.innerHTML;
-      button.innerHTML = `${CHECK_ICON}<span>Copied</span>`;
+      button.innerHTML = `${CHECK_ICON}<span>${t('share.copied')}</span>`;
       window.setTimeout(() => {
         button.innerHTML = label;
       }, 2000);
@@ -251,7 +247,7 @@ export class ShareDialog {
       <div class="share-dialog__card" role="${view.role}" aria-modal="true" aria-labelledby="share-dialog-title" tabindex="-1">
         <div class="share-dialog__header">
           <h2 id="share-dialog-title" class="share-dialog__title">${view.titleHtml}</h2>
-          <button type="button" class="share-dialog__close" aria-label="Close" data-action="close">${CLOSE_ICON}</button>
+          <button type="button" class="share-dialog__close" aria-label="${t('common.close')}" data-action="close">${CLOSE_ICON}</button>
         </div>
         ${view.bodyHtml}
         <div class="${footerClass}">${view.footerHtml}</div>

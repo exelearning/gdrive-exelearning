@@ -7,6 +7,7 @@ import {
 import { mountPackage } from '../elpx/mount-package';
 import { validatePackage } from '../elpx/package-validator';
 import { readPackage } from '../elpx/zip-reader';
+import { t } from '../i18n';
 import { requiredElement, setEditorTitle } from '../ui/editor-shell';
 import { StatusView } from '../ui/status';
 import { renderErrorCard, renderPublicViewerPage } from '../ui/viewer-shell';
@@ -20,7 +21,7 @@ export async function renderPublicView(root: HTMLElement): Promise<void> {
   const { fileId, resourceKey } = parsePublicViewParams(
     new URLSearchParams(window.location.search),
   );
-  renderPublicViewerPage(root, 'Fetching from Google Drive…');
+  renderPublicViewerPage(root, t('status.fetchingPublic'));
   const status = new StatusView(requiredElement(root, '#status'));
   const host = requiredElement(root, '#viewer-host');
 
@@ -33,19 +34,17 @@ export async function renderPublicView(root: HTMLElement): Promise<void> {
     });
     setEditorTitle(root, metadata.name);
     if (metadata.capabilities?.canDownload === false) {
-      throw new Error(
-        `Google Drive does not allow downloading "${metadata.name}".`,
-      );
+      throw new Error(t('viewer.downloadForbidden', { name: metadata.name }));
     }
 
-    status.set('Downloading…');
+    status.set(t('status.downloading'));
     const bytes = await downloadPublicFile({ apiKey, fileId, resourceKey });
 
-    status.set('Reading package…');
+    status.set(t('status.readingPackage'));
     const { entries } = await readPackage(bytes);
     const validation = validatePackage(entries, metadata.name);
     if (!validation.valid) {
-      throw new Error(validation.error ?? 'The package could not be read.');
+      throw new Error(validation.error ?? t('viewer.packageUnreadable'));
     }
 
     const mounted = await mountPackage(host, {
@@ -54,7 +53,7 @@ export async function renderPublicView(root: HTMLElement): Promise<void> {
       filename: metadata.name,
     });
     window.addEventListener('beforeunload', () => void mounted.teardown());
-    status.set('Loaded.', 'success');
+    status.set(t('status.loaded'), 'success');
   } catch (error) {
     const message = describePublicViewError(error);
     renderErrorCard(host, message);

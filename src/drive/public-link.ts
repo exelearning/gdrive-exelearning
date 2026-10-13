@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 /**
  * Helpers for the students-facing public link: `<app>/view?fileId=…`.
  * The page behind it downloads the `.elpx` with the API key alone, so the
@@ -33,10 +34,10 @@ export function parsePublicViewParams(
 ): PublicViewParams {
   const fileId = params.get('fileId');
   if (!fileId) {
-    throw new Error('Missing fileId in the public link.');
+    throw new Error(t('error.missingFileId'));
   }
   if (!DRIVE_ID_PATTERN.test(fileId)) {
-    throw new Error('Invalid fileId in the public link.');
+    throw new Error(t('error.invalidFileId'));
   }
   const resourceKey = params.get('resourceKey');
   return resourceKey ? { fileId, resourceKey } : { fileId };
@@ -52,7 +53,7 @@ export function describePublicViewError(error: unknown): string {
     error instanceof DriveApiError &&
     (error.status === 403 || error.status === 404)
   ) {
-    return 'This file is not shared publicly ("Anyone with the link") or no longer exists in Google Drive.';
+    return t('viewer.notShared');
   }
   return error instanceof Error ? error.message : String(error);
 }
@@ -76,7 +77,7 @@ export function describeShareError(error: unknown): ShareErrorDescription {
   if (error instanceof DriveApiError && error.status === 403) {
     return {
       message,
-      hint: 'Your Google Workspace administrator may restrict "Anyone with the link". You can still share the file with people in your domain from Google Drive; they open it with Open with → eXeLearning.',
+      hint: t('share.workspaceHint'),
     };
   }
   return { message };

@@ -1,4 +1,5 @@
 import { EDITOR_INDEX_PATH, EDITOR_PATH } from '../config';
+import { currentLocale } from '../i18n';
 
 export interface BuildEditorBootHtmlOptions {
   parentOrigin: string;
@@ -98,6 +99,7 @@ export async function buildEditorBootHtml(
     parentOrigin: options.parentOrigin,
     trustedOrigins,
     hideUI,
+    locale: currentLocale(),
   })};`;
   dom.head.insertBefore(config, base.nextSibling);
 

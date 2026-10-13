@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { BACK_ICON_SVG, EXELEARNING_ICON_SVG } from './icons';
 
 /**
@@ -9,16 +10,16 @@ export function renderViewerPage(root: HTMLElement, statusText: string): void {
   root.innerHTML = `
     <main class="editor-shell">
       <header class="editor-toolbar">
-        <button id="back-to-drive" type="button" class="editor-back" aria-label="Back to Google Drive">${BACK_ICON_SVG}</button>
+        <button id="back-to-drive" type="button" class="editor-back" aria-label="${t('toolbar.back')}">${BACK_ICON_SVG}</button>
         <h1 class="editor-title">eXeLearning<span class="editor-title__separator"> – </span><span id="editor-filename" class="editor-title__filename">gdrive-exelearning</span></h1>
         <p id="status" class="editor-status" role="status" aria-live="polite">${escapeHtml(statusText)}</p>
         <div class="editor-actions">
-          <button id="authorize-open" type="button" class="btn-primary">Authorize and open</button>
-          <button id="share-link" type="button" class="btn-secondary" disabled>Share public link</button>
-          <button id="edit-file" type="button" class="btn-primary" disabled>${EXELEARNING_ICON_SVG}<span>Edit in eXeLearning</span></button>
+          <button id="authorize-open" type="button" class="btn-primary">${t('toolbar.authorizeOpen')}</button>
+          <button id="share-link" type="button" class="btn-secondary" disabled>${t('toolbar.share')}</button>
+          <button id="edit-file" type="button" class="btn-primary" disabled>${EXELEARNING_ICON_SVG}<span>${t('toolbar.edit')}</span></button>
         </div>
       </header>
-      <section id="viewer-host" class="viewer-host" aria-label="eXeLearning viewer"></section>
+      <section id="viewer-host" class="viewer-host" aria-label="${t('toolbar.viewerAria')}"></section>
     </main>
   `;
 }
@@ -39,7 +40,7 @@ export function renderPublicViewerPage(
         <p id="status" class="editor-status" role="status" aria-live="polite">${escapeHtml(statusText)}</p>
         <div class="editor-actions"></div>
       </header>
-      <section id="viewer-host" class="viewer-host" aria-label="eXeLearning viewer"></section>
+      <section id="viewer-host" class="viewer-host" aria-label="${t('toolbar.viewerAria')}"></section>
     </main>
   `;
 }
@@ -71,7 +72,7 @@ export function renderErrorCard(host: HTMLElement, message: string): void {
   host.innerHTML = `
     <div class="viewer-legacy">
       <div class="viewer-legacy__card viewer-legacy__card--error">
-        <h2 class="viewer-legacy__title">Could not open this file</h2>
+        <h2 class="viewer-legacy__title">${t('viewer.errorTitle')}</h2>
         <p class="viewer-legacy__message">${escapeHtml(message)}</p>
       </div>
     </div>

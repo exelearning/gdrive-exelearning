@@ -1,5 +1,13 @@
 import { authorizeGoogle } from '../auth/google-token-client';
 import { APP_BASE_URL, EDITOR_INDEX_PATH, GOOGLE_CLIENT_ID } from '../config';
+import {
+  currentLocale,
+  LOCALE_NAMES,
+  rememberLocale,
+  resolveLocale,
+  SUPPORTED_LOCALES,
+  t,
+} from '../i18n';
 
 const DRIVE_URL = 'https://drive.google.com/drive/my-drive';
 const EXELEARNING_SITE = 'https://exelearning.net';
@@ -22,9 +30,13 @@ const CHEVRON_ICON = `<svg width="14" height="14" ${ICON_ATTRS}><path d="m9 18 6
 export function renderHome(root: HTMLElement): void {
   const logoSrc = `${APP_BASE_URL}icons/exelearning.svg`;
   const createHref = `${APP_BASE_URL}create`;
+  const languageOptions = SUPPORTED_LOCALES.map(
+    locale =>
+      `<option value="${locale}"${locale === currentLocale() ? ' selected' : ''}>${LOCALE_NAMES[locale]}</option>`,
+  ).join('');
   const clientCheck = GOOGLE_CLIENT_ID
-    ? '<span class="home-check__item" data-state="ok">Google client configured</span>'
-    : '<span class="home-check__item" data-state="error">Missing VITE_GOOGLE_CLIENT_ID</span>';
+    ? `<span class="home-check__item" data-state="ok">${t('home.check.clientOk')}</span>`
+    : `<span class="home-check__item" data-state="error">${t('home.check.clientMissing')}</span>`;
 
   root.innerHTML = `
     <div class="home">
@@ -32,76 +44,79 @@ export function renderHome(root: HTMLElement): void {
         <a href="${APP_BASE_URL}" class="home-brand">
           <img src="${logoSrc}" alt="" />
           <span class="home-brand__name">eXeLearning</span>
-          <span class="home-brand__suffix">for Google Drive</span>
+          <span class="home-brand__suffix">${t('home.brandSuffix')}</span>
         </a>
         <nav class="home-nav">
-          <a href="${EXELEARNING_SITE}" target="_blank" rel="noopener">eXeLearning.net</a>
-          <a href="${REPO_URL}" target="_blank" rel="noopener">Source code</a>
+          <a href="${EXELEARNING_SITE}" target="_blank" rel="noopener">${t('home.nav.site')}</a>
+          <a href="${REPO_URL}" target="_blank" rel="noopener">${t('home.nav.source')}</a>
         </nav>
       </header>
 
       <main class="home-main">
         <section class="home-intro">
-          <h1>Edit eXeLearning projects in Google Drive</h1>
-          <p>Open, edit and save <strong>.elpx</strong> files from Drive, in your browser. Your files never leave your Drive.</p>
+          <h1>${t('home.title')}</h1>
+          <p>${t('home.lead')}</p>
           <div class="home-connect" id="home-connect">
             <button class="btn-pill btn-pill--filled" type="button" id="authorize-google">
               <span class="home-google-badge">${GOOGLE_ICON}</span>
-              <span>Connect Google Drive</span>
+              <span>${t('home.connect')}</span>
             </button>
-            <span class="home-connect__hint">Adds eXeLearning to Drive’s “Open with” menu. Free and open source.</span>
+            <span class="home-connect__hint">${t('home.connectHint')}</span>
           </div>
           <div class="home-connected" id="home-connected" hidden>
-            <span class="home-connected__badge">${CHECK_ICON}Connected to Google Drive</span>
+            <span class="home-connected__badge">${CHECK_ICON}${t('home.connected')}</span>
             <div class="home-connected__actions">
-              <a class="btn-pill btn-pill--filled" id="open-drive" href="${DRIVE_URL}" target="_blank" rel="noopener">${EXTERNAL_ICON}<span>Open Google Drive</span></a>
-              <a class="btn-pill btn-pill--outline" id="create-new" href="${createHref}">${PLUS_ICON}<span>New project in Drive</span></a>
+              <a class="btn-pill btn-pill--filled" id="open-drive" href="${DRIVE_URL}" target="_blank" rel="noopener">${EXTERNAL_ICON}<span>${t('home.openDrive')}</span></a>
+              <a class="btn-pill btn-pill--outline" id="create-new" href="${createHref}">${PLUS_ICON}<span>${t('home.newProject')}</span></a>
             </div>
           </div>
         </section>
 
         <section class="home-steps">
-          <h2>How it works</h2>
+          <h2>${t('home.howItWorks')}</h2>
           <div class="home-steps__grid">
             <article class="home-step">
               <span class="home-step__num">1</span>
-              <h3>Connect once</h3>
-              <p>Sign in with Google and allow eXeLearning to open the files you choose. Nothing else in your Drive is visible to it.</p>
+              <h3>${t('home.step1.title')}</h3>
+              <p>${t('home.step1.body')}</p>
             </article>
             <article class="home-step">
               <span class="home-step__num">2</span>
-              <h3>Open from Drive</h3>
-              <p>Right-click any .elpx file and choose <strong>Open with → eXeLearning</strong>. To start from scratch: New → More → eXeLearning.</p>
+              <h3>${t('home.step2.title')}</h3>
+              <p>${t('home.step2.body', { openWith: `<strong>${t('home.step2.openWith')}</strong>` })}</p>
               <div class="home-menu" aria-hidden="true">
-                <div>Preview</div>
-                <div class="home-menu__row">Open with ${CHEVRON_ICON}</div>
+                <div>${t('home.menu.preview')}</div>
+                <div class="home-menu__row">${t('home.menu.openWith')} ${CHEVRON_ICON}</div>
                 <div class="home-menu__item"><img src="${logoSrc}" alt="" />eXeLearning</div>
-                <div>Download</div>
+                <div>${t('home.menu.download')}</div>
               </div>
             </article>
             <article class="home-step">
               <span class="home-step__num">3</span>
-              <h3>Edit, save, share</h3>
-              <p>Save back to Drive with one click. Share a read-only link so students can open the project without a Google account.</p>
+              <h3>${t('home.step3.title')}</h3>
+              <p>${t('home.step3.body')}</p>
             </article>
           </div>
         </section>
 
-        <section class="home-check" aria-label="System check">
-          <span class="home-check__title">System check</span>
+        <section class="home-check" aria-label="${t('home.check.title')}">
+          <span class="home-check__title">${t('home.check.title')}</span>
           ${clientCheck}
-          <span class="home-check__item" id="editor-diagnostic">Checking editor…</span>
-          <span class="home-check__item" id="auth-status">Not connected to Google Drive</span>
+          <span class="home-check__item" id="editor-diagnostic">${t('home.check.editorChecking')}</span>
+          <span class="home-check__item" id="auth-status">${t('home.check.notConnected')}</span>
         </section>
       </main>
 
       <footer class="home-footer">
-        <span>eXeLearning for Google Drive · free and open source</span>
+        <span>${t('home.footer.tagline')}</span>
         <nav>
-          <a href="${APP_BASE_URL}privacy.html">Privacy Policy</a>
-          <a href="${APP_BASE_URL}terms.html">Terms of Service</a>
-          <a href="${REPO_URL}" target="_blank" rel="noopener">Source code</a>
-          <a href="${EXELEARNING_SITE}" target="_blank" rel="noopener">eXeLearning.net</a>
+          <a href="${APP_BASE_URL}privacy.html">${t('home.footer.privacy')}</a>
+          <a href="${APP_BASE_URL}terms.html">${t('home.footer.terms')}</a>
+          <a href="${REPO_URL}" target="_blank" rel="noopener">${t('home.nav.source')}</a>
+          <a href="${EXELEARNING_SITE}" target="_blank" rel="noopener">${t('home.nav.site')}</a>
+          <label class="home-lang">${t('home.language')}
+            <select id="language-select">${languageOptions}</select>
+          </label>
         </nav>
       </footer>
     </div>
@@ -115,14 +130,27 @@ export function renderHome(root: HTMLElement): void {
 
   void checkEditorInstalled(editorDiagnostic);
 
+  const languageSelect = requiredElement<HTMLSelectElement>(
+    root,
+    '#language-select',
+  );
+  languageSelect.addEventListener('change', () => {
+    const locale = resolveLocale({ query: languageSelect.value });
+    rememberLocale(locale);
+    // Drop any ?hl= override so the remembered choice wins on reload.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('hl');
+    window.location.replace(url.toString());
+  });
+
   authBtn.addEventListener('click', async () => {
     authBtn.disabled = true;
-    setCheck(authStatus, 'Requesting authorization…');
+    setCheck(authStatus, t('home.check.requesting'));
     try {
       await authorizeGoogle();
       connectBlock.hidden = true;
       connectedBlock.hidden = false;
-      setCheck(authStatus, 'Connected to Google Drive', 'ok');
+      setCheck(authStatus, t('home.connected'), 'ok');
     } catch (error) {
       setCheck(
         authStatus,
@@ -142,13 +170,17 @@ async function checkEditorInstalled(target: HTMLElement): Promise<void> {
       cache: 'no-cache',
     });
     if (response.ok) {
-      setCheck(target, 'Editor ready', 'ok');
+      setCheck(target, t('home.check.editorReady'), 'ok');
       return;
     }
   } catch {
     // fall through to the error state
   }
-  setCheck(target, `Editor not found at ${EDITOR_INDEX_PATH}`, 'error');
+  setCheck(
+    target,
+    t('home.check.editorMissing', { path: EDITOR_INDEX_PATH }),
+    'error',
+  );
 }
 
 function setCheck(
