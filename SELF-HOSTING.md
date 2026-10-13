@@ -75,7 +75,7 @@ After the first deploy:
    should show the updated `modifiedTime` and the editor's screenshot
    as the file thumbnail.
 
-## Social preview (Open Graph)
+## 4. Social preview (Open Graph)
 
 `index.html` carries Open Graph and Twitter Card tags pointing at
 `https://exelearning.github.io/gdrive-exelearning/` and its
