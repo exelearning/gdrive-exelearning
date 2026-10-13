@@ -1021,3 +1021,235 @@ dd {
     justify-self: center;
   }
 }
+
+/* ─────────────────────────── share dialog ─────────────────────────── */
+.share-dialog {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 9999;
+}
+
+.share-dialog--visible {
+  display: flex;
+}
+
+.share-dialog__card {
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  outline: none;
+}
+
+.share-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.share-dialog__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.share-dialog__close {
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  margin: -4px -6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #52616f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-dialog__close:hover {
+  background: #f1f4f9;
+}
+
+.share-dialog__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.share-dialog__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #52616f;
+}
+
+.share-dialog__access {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.share-dialog__avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef2f6;
+  color: #52616f;
+}
+
+.share-dialog__avatar--public {
+  background: #e3f3ea;
+  color: #238655;
+}
+
+.share-dialog__access-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.share-dialog .share-dialog__access-text strong {
+  font-size: 0.95rem;
+}
+
+.share-dialog__access-text small,
+.share-dialog__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #52616f;
+}
+
+.share-dialog__role {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eef2f6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #52616f;
+}
+
+.share-dialog__callout {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #cfe7d8;
+  border-radius: 10px;
+  background: #eef6f1;
+  color: #238655;
+}
+
+.share-dialog .share-dialog__callout svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.share-dialog__callout p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #1f2933;
+}
+
+.share-dialog__callout--error {
+  border-color: #f3c6c0;
+  background: #fdf1ef;
+  color: #b42318;
+}
+
+.share-dialog__link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.share-dialog__link input {
+  flex: 1 1 200px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #c5cfdb;
+  border-radius: 8px;
+  background: #f6f8fb;
+  color: #1f2933;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.share-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.share-dialog__footer--split {
+  justify-content: space-between;
+}
+
+.share-dialog__manage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #238655;
+  text-decoration: none;
+}
+
+.share-dialog__manage:hover {
+  text-decoration: underline;
+}
+
+.share-dialog__btn {
+  height: 40px;
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share-dialog__btn--text {
+  background: transparent;
+  color: #238655;
+}
+
+.share-dialog__btn--outline {
+  border: 1px solid #238655;
+  background: #ffffff;
+  color: #238655;
+}
+
+.share-dialog__btn--text:hover:not(:disabled),
+.share-dialog__btn--outline:hover:not(:disabled) {
+  background: #eef6f1;
+}
+
+.share-dialog__btn--filled {
+  background: #238655;
+  color: #ffffff;
+}
+
+.share-dialog__btn--filled:hover:not(:disabled) {
+  background: #1f6f46;
+}

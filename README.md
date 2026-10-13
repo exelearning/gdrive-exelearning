@@ -43,9 +43,10 @@ end users see eXeLearning right next to Google's own apps in Drive:
    straight to the editor.
 3. Edit the project. Use the **Save to Drive** button or `Ctrl/Cmd+S`.
 4. Drive metadata (`modifiedTime`, thumbnail, custom mime type) is
-. Click **Share public link** (preview or editor toolbar) to get a
-   read-only URL for students. The file becomes readable by anyone who
-   has the link.
+   updated to reflect the new content.
+5. Click **Share public link** (preview or editor toolbar). A dialog
+   explains that the file becomes readable by anyone with the link; after
+   confirming, copy the read-only URL for students from the dialog.
 
 To create a new project, pick **New → eXeLearning** from any Drive
 folder; the editor opens with a blank document and the file is created

@@ -136,7 +136,10 @@ These are natural-language guidelines for agents to follow when developing the `
   (`assets/js/exelearning-editor.js`): a full-screen blocking modal with a
   spinner during `requestSave` + Drive upload, switched to an error state
   with a Close button on failure. Implementation lives in
-  `src/ui/dialogs.ts` (`SavingModal`).
+  `src/ui/dialogs.ts` (`SavingModal`). The share flow uses `ShareDialog`
+  from the same module: confirm the consequence first, then show the link
+  with a copy button, or Drive's refusal with the in-domain fallback. Never
+  use `window.prompt` for the link.
 - The editor toolbar should show "eXeLearning – &lt;filename&gt;" on the left,
   a "Save to Drive" button with an inline Drive logo SVG, and a "Close" button
   on the right. Hide the in-editor "Save" via `hideUI` so the parent button is

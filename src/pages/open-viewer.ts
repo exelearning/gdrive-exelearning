@@ -113,6 +113,7 @@ export async function renderViewerMode(
       enableShareButton(shareButton, {
         token,
         fileId: ctx.fileId,
+        filename: metadata.name,
         resourceKey: ctx.resourceKey,
         status,
       });

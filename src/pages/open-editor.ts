@@ -168,7 +168,13 @@ export async function renderEditorMode(
     if (!isLegacyElp && metadata.capabilities?.canShare !== false) {
       enableShareButton(
         requiredElement(root, '#share-link') as HTMLButtonElement,
-        { token, fileId: metadata.id, resourceKey, status },
+        {
+          token,
+          fileId: metadata.id,
+          filename: metadata.name,
+          resourceKey,
+          status,
+        },
       );
     }
 

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { DriveApiError } from './drive-api';
 import {
+  buildDriveFileUrl,
   buildPublicViewUrl,
   describePublicViewError,
+  describeShareError,
   parsePublicViewParams,
 } from './public-link';
 
@@ -63,5 +65,34 @@ describe('describePublicViewError', () => {
 
   it('passes other errors through', () => {
     expect(describePublicViewError(new Error('boom'))).toBe('boom');
+  });
+});
+
+describe('buildDriveFileUrl', () => {
+  it('opens the file in the Google Drive web UI', () => {
+    expect(buildDriveFileUrl('abc-123')).toBe(
+      'https://drive.google.com/file/d/abc-123/view',
+    );
+  });
+});
+
+describe('describeShareError', () => {
+  it('quotes Google and hints at the domain fallback on a 403', () => {
+    const result = describeShareError(
+      new DriveApiError(
+        403,
+        'Sharing outside of your organization is not allowed.',
+        null,
+      ),
+    );
+    expect(result.message).toBe(
+      'Sharing outside of your organization is not allowed.',
+    );
+    expect(result.hint).toContain('Google Workspace');
+  });
+
+  it('passes other errors through without a hint', () => {
+    const result = describeShareError(new Error('Network down'));
+    expect(result).toEqual({ message: 'Network down' });
   });
 });
