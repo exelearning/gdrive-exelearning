@@ -23,3 +23,12 @@ export function requireGoogleClientId(): string {
   }
   return GOOGLE_CLIENT_ID;
 }
+
+export function requireGoogleApiKey(): string {
+  if (!GOOGLE_API_KEY) {
+    throw new Error(
+      'Public links are not configured on this deployment (missing VITE_GOOGLE_API_KEY).',
+    );
+  }
+  return GOOGLE_API_KEY;
+}

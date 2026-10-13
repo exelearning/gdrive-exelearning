@@ -173,6 +173,11 @@ These are natural-language guidelines for agents to follow when developing the `
 - If the remote file changed, show overwrite, save as copy, and cancel choices.
 - If `capabilities.canDownload` is false, stop with a clear error.
 - If `capabilities.canEdit` is false, open read-only and disable saving.
+- Public links: create the permission with `permissions.create`
+  (`type: anyone`, `role: reader`, `allowFileDiscovery: false`) under the
+  existing `drive.file` scope; only enable the share button when
+  `capabilities.canShare` is not false. The `/view` page fetches metadata
+  and media with `?key=<API key>` and no `Authorization` header.
 
 ## Editor integration conventions
 
@@ -270,6 +275,8 @@ resolves: it replaces `handleSaveRequest` with one that runs
   - editor installation diagnostics
 - `/open` is the Google Drive Open URL endpoint.
 - `/create` is the Google Drive New URL endpoint.
+- `/view` is the public, no-login viewer (`?fileId=…[&resourceKey=…]`). It
+  authenticates with the API key only and must never request OAuth.
 - Parse and validate Google Drive `state` parameters before requesting OAuth tokens.
 - Keep route code thin; put reusable auth, Drive, editor, and UI behavior in their own modules.
 

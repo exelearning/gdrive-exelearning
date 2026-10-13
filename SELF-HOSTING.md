@@ -58,9 +58,12 @@ EXELEARNING_EDITOR_REF=main \
      Without these, Drive will not list **eXeLearning** under
      **Open with** for those files.
 5. Copy the OAuth client ID into the build environment as
-   `VITE_GOOGLE_CLIENT_ID` (and optionally `VITE_GOOGLE_API_KEY`). For
+   `VITE_GOOGLE_CLIENT_ID` (and `VITE_GOOGLE_API_KEY`, see step 6). For
    GitHub Pages deploys, store them as repository secrets so the
-   workflow embeds them at build time.
+. Public links (**Share public link** → `/view?fileId=…`) download the
+   file with `VITE_GOOGLE_API_KEY` alone, so create an **API key**
+   restricted to the Google Drive API and to the deploy origin as HTTP
+   referrer. Without it the share button stays disabled.
 
 ## 3. Verify
 
