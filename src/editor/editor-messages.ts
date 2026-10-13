@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 /**
  * eXeLearning embedding postMessage protocol.
  *
@@ -81,5 +82,5 @@ export function normalizeBytes(value: unknown): ArrayBuffer {
     );
     return new Uint8Array(bytes).buffer;
   }
-  throw new Error('The editor returned a save payload without binary bytes.');
+  throw new Error(t('error.savePayloadNoBytes'));
 }

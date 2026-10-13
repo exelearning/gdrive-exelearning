@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 export const GOOGLE_DRIVE_SCOPES = [
   'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/drive.install',
@@ -98,7 +99,7 @@ export function createGoogleTokenClient(
   const getOauth2 = () => {
     const oauth2 = window.google?.accounts?.oauth2;
     if (!oauth2) {
-      throw new Error('Google Identity Services is not loaded.');
+      throw new Error(t('error.gisNotLoaded'));
     }
     return oauth2;
   };
@@ -151,11 +152,7 @@ export function createGoogleTokenClient(
         }
 
         if (!response.access_token) {
-          reject(
-            new Error(
-              'Google Identity Services did not return an access token.',
-            ),
-          );
+          reject(new Error(t('error.gisNoToken')));
           return;
         }
 
@@ -232,9 +229,7 @@ function getRequiredGoogleClientId(): string {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   if (!clientId) {
-    throw new Error(
-      'Missing VITE_GOOGLE_CLIENT_ID. Configure it before using Google Drive.',
-    );
+    throw new Error(t('error.missingClientId'));
   }
 
   return clientId;
@@ -252,7 +247,7 @@ async function loadGoogleIdentityServices(): Promise<void> {
     const script = existingScript ?? document.createElement('script');
 
     const timeout = window.setTimeout(() => {
-      reject(new Error('Timed out loading Google Identity Services.'));
+      reject(new Error(t('error.gisTimeout')));
     }, 10_000);
 
     const finish = () => {
@@ -261,11 +256,7 @@ async function loadGoogleIdentityServices(): Promise<void> {
         resolve();
         return;
       }
-      reject(
-        new Error(
-          'Google Identity Services loaded, but OAuth is not available.',
-        ),
-      );
+      reject(new Error(t('error.gisNoOauth')));
     };
 
     script.addEventListener('load', finish, { once: true });
@@ -273,7 +264,7 @@ async function loadGoogleIdentityServices(): Promise<void> {
       'error',
       () => {
         window.clearTimeout(timeout);
-        reject(new Error('Failed to load Google Identity Services.'));
+        reject(new Error(t('error.gisLoadFailed')));
       },
       { once: true },
     );

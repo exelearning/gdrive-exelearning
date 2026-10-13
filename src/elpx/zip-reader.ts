@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 /**
  * Reads an `.elpx` (ZIP) archive in the browser using fflate. The output is
  * keyed by normalized entry path; binary entries stay as `Uint8Array` so the
@@ -71,12 +72,15 @@ export async function readPackage(
 ): Promise<ZipReadResult> {
   if (buffer.byteLength > limits.maxCompressedBytes) {
     throw new ZipReadError(
-      `Package exceeds compressed-size limit (${buffer.byteLength} > ${limits.maxCompressedBytes})`,
+      t('error.packageTooLarge', {
+        size: buffer.byteLength,
+        max: limits.maxCompressedBytes,
+      }),
       'PACKAGE_TOO_LARGE',
     );
   }
   if (!looksLikeZip(buffer)) {
-    throw new ZipReadError('Not a ZIP archive', 'NOT_A_ZIP');
+    throw new ZipReadError(t('error.notZip'), 'NOT_A_ZIP');
   }
 
   const bytes = new Uint8Array(buffer);
@@ -91,8 +95,8 @@ export async function readPackage(
   } catch (error) {
     throw new ZipReadError(
       error instanceof Error
-        ? error.message || 'ZIP decode failed'
-        : 'ZIP decode failed',
+        ? error.message || t('error.zipDecode')
+        : t('error.zipDecode'),
       'CORRUPT',
     );
   }
@@ -109,18 +113,24 @@ export async function readPackage(
     count += 1;
     if (count > limits.maxEntries) {
       throw new ZipReadError(
-        `Package has more than ${limits.maxEntries} entries`,
+        t('error.tooManyEntries', { max: limits.maxEntries }),
         'TOO_MANY_ENTRIES',
       );
     }
     const normalized = normalizeEntryPath(rawName);
     if (normalized === null) {
-      throw new ZipReadError(`Unsafe entry path: ${rawName}`, 'UNSAFE_ENTRY');
+      throw new ZipReadError(
+        t('error.unsafeEntry', { name: rawName }),
+        'UNSAFE_ENTRY',
+      );
     }
     totalUncompressed += data.byteLength;
     if (totalUncompressed > limits.maxUncompressedBytes) {
       throw new ZipReadError(
-        `Decompressed package exceeds limit (${totalUncompressed} > ${limits.maxUncompressedBytes})`,
+        t('error.decompressedTooLarge', {
+          size: totalUncompressed,
+          max: limits.maxUncompressedBytes,
+        }),
         'PACKAGE_TOO_LARGE',
       );
     }

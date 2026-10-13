@@ -1,4 +1,5 @@
 import { ELPX_MIME_TYPE } from '../config';
+import { t } from '../i18n';
 
 const DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
 const DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
@@ -179,7 +180,7 @@ export async function updateFileContent(
     typeof fileIdOrOptions === 'string' ? content : fileIdOrOptions.bytes;
 
   if (!uploadContent) {
-    throw new Error('Missing Drive file content.');
+    throw new Error(t('error.missingContent'));
   }
 
   const url = buildDriveUrl(
@@ -384,11 +385,7 @@ export async function startResumableUploadSession(
 
   const location = response.headers.get('Location');
   if (!location) {
-    throw new DriveApiError(
-      response.status,
-      'Drive did not return a resumable upload session URL.',
-      null,
-    );
+    throw new DriveApiError(response.status, t('error.noUploadSession'), null);
   }
 
   return location;
@@ -569,7 +566,7 @@ function getErrorMessage(details: unknown, fallback: string): string {
     return details.error.message;
   }
 
-  return fallback || 'Google Drive request failed.';
+  return fallback || t('error.driveFailed');
 }
 
 // ---------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import { parseDriveStateFromParams } from '../drive/drive-state';
+import { t } from '../i18n';
 import { renderEditorMode } from './open-editor';
 import { cleanOpenUrl, parseOpenMode } from './open-url';
 import { renderViewerMode } from './open-viewer';
@@ -14,7 +15,7 @@ export async function renderOpen(root: HTMLElement): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const state = parseDriveStateFromParams(params, 'open');
   if (state.action !== 'open') {
-    throw new Error('This endpoint only supports Google Drive open actions.');
+    throw new Error(t('error.openOnly'));
   }
   const mode = parseOpenMode(params);
   cleanOpenUrl(state, { mode });

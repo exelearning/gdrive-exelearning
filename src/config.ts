@@ -1,3 +1,4 @@
+import { t } from './i18n';
 export const APP_NAME = 'gdrive-exelearning';
 
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
@@ -17,18 +18,14 @@ export const ELPX_MIME_TYPE = 'application/vnd.exelearning.elpx';
 
 export function requireGoogleClientId(): string {
   if (!GOOGLE_CLIENT_ID) {
-    throw new Error(
-      'Missing VITE_GOOGLE_CLIENT_ID. Configure it in your environment before using Google Drive.',
-    );
+    throw new Error(t('error.missingClientId'));
   }
   return GOOGLE_CLIENT_ID;
 }
 
 export function requireGoogleApiKey(): string {
   if (!GOOGLE_API_KEY) {
-    throw new Error(
-      'Public links are not configured on this deployment (missing VITE_GOOGLE_API_KEY).',
-    );
+    throw new Error(t('error.publicLinksNotConfigured'));
   }
   return GOOGLE_API_KEY;
 }

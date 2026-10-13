@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import {
   type BuildEditorBootHtmlOptions,
   buildEditorBootHtml,
@@ -130,7 +131,7 @@ export class EditorFrame {
 
   private ensureReady(): void {
     if (!this.ready) {
-      throw new Error('The eXeLearning editor is not ready yet.');
+      throw new Error(t('error.editorNotReady'));
     }
   }
 
@@ -142,7 +143,7 @@ export class EditorFrame {
   private post(message: EditorMessage, transfer: Transferable[] = []): void {
     const target = this.iframe.contentWindow;
     if (!target) {
-      throw new Error('The editor iframe is not available.');
+      throw new Error(t('error.editorFrameMissing'));
     }
     // The iframe is loaded via srcdoc, which gives it a null origin. Using the
     // parent's origin here would silently drop the message, so '*' is required

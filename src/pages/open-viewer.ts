@@ -5,6 +5,7 @@ import { publishElpxThumbnailFromEntries } from '../drive/drive-thumbnail';
 import { type MountedPackage, mountPackage } from '../elpx/mount-package';
 import { validatePackage } from '../elpx/package-validator';
 import { readPackage, ZipReadError } from '../elpx/zip-reader';
+import { t } from '../i18n';
 import {
   closeEditor,
   requiredElement,
@@ -29,7 +30,7 @@ export async function renderViewerMode(
   root: HTMLElement,
   ctx: ViewerModeContext,
 ): Promise<void> {
-  renderViewerPage(root, 'Connecting to Google Drive…');
+  renderViewerPage(root, t('status.connecting'));
   const status = new StatusView(requiredElement(root, '#status'));
   const authButton = requiredElement(
     root,
@@ -80,19 +81,19 @@ export async function renderViewerMode(
         return;
       }
       authButton.disabled = false;
-      status.set('Click "Authorize and open" to preview this file.');
+      status.set(t('status.clickAuthorizePreview'));
     }
   }
 
   async function openInViewer(prompt: 'none' | 'consent'): Promise<void> {
-    status.set('Requesting Google authorization…');
+    status.set(t('status.requestingAuth'));
     const token = await requestAccessToken({
       prompt,
       interactive: prompt === 'consent',
     });
     authButton.hidden = true;
 
-    status.set('Fetching Google Drive metadata…');
+    status.set(t('status.fetchingMetadata'));
     const { metadata, bytes } = await fetchEditableDriveFile({
       token,
       fileId: ctx.fileId,
@@ -106,8 +107,7 @@ export async function renderViewerMode(
       : metadata.capabilities?.canEdit !== false;
     editButton.disabled = !canEdit;
     if (!canEdit) {
-      editButton.title =
-        'You do not have permission to edit this file in Google Drive.';
+      editButton.title = t('toolbar.cannotEdit');
     }
     if (!isLegacyElp && metadata.capabilities?.canShare !== false) {
       enableShareButton(shareButton, {
@@ -120,7 +120,7 @@ export async function renderViewerMode(
     }
 
     transitionToEditor = async () => {
-      status.set('Opening editor…');
+      status.set(t('status.openingEditor'));
       await teardownViewerSession();
       host.replaceChildren();
       setOpenMode('editor');
@@ -131,7 +131,7 @@ export async function renderViewerMode(
       });
     };
 
-    status.set('Reading package…');
+    status.set(t('status.readingPackage'));
     let validation: ReturnType<typeof validatePackage> | null = null;
     let entries: ReadonlyMap<string, Uint8Array> | null = null;
     try {
@@ -167,14 +167,14 @@ export async function renderViewerMode(
       const message =
         validation?.error ??
         (legacy
-          ? 'This file is from an older version of eXeLearning and cannot be previewed.'
-          : 'The package could not be read.');
+          ? t('viewer.legacyUnsupported')
+          : t('viewer.packageUnreadable'));
       if (legacy) {
         renderLegacyCard(host, {
           filename: metadata.name,
-          message: `${message} Click Edit to open it in the editor.`,
+          message: `${message} ${t('viewer.legacyClickEdit')}`,
         });
-        status.set('Legacy file — click Edit to migrate it.', 'warning');
+        status.set(t('status.legacyFile'), 'warning');
       } else {
         renderErrorCard(host, message);
         status.set(message, 'error');
@@ -187,7 +187,7 @@ export async function renderViewerMode(
       indexEntry: validation.shape.indexEntry ?? 'index.html',
       filename: metadata.name,
     });
-    status.set('Preview loaded.', 'success');
+    status.set(t('status.previewLoaded'), 'success');
   }
 
   async function teardownViewerSession(): Promise<void> {
@@ -226,7 +226,7 @@ function validatePackageFallback(
       legacyMarker: null,
     },
     error: isLegacyByExtension
-      ? 'This file is from an older version of eXeLearning and cannot be previewed.'
-      : 'The file could not be read as a valid eXeLearning package.',
+      ? t('viewer.legacyUnsupported')
+      : t('viewer.invalidPackage'),
   };
 }

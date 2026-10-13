@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { BACK_ICON_SVG, DRIVE_ICON_SVG } from './icons';
 
 /**
@@ -10,16 +11,16 @@ export function renderEditorPage(root: HTMLElement, statusText: string): void {
   root.innerHTML = `
     <main class="editor-shell">
       <header class="editor-toolbar">
-        <button id="back-to-drive" type="button" class="editor-back" aria-label="Back to Google Drive">${BACK_ICON_SVG}</button>
+        <button id="back-to-drive" type="button" class="editor-back" aria-label="${t('toolbar.back')}">${BACK_ICON_SVG}</button>
         <h1 class="editor-title">eXeLearning<span class="editor-title__separator"> – </span><span id="editor-filename" class="editor-title__filename">gdrive-exelearning</span></h1>
         <p id="status" class="editor-status" role="status" aria-live="polite">${escapeHtml(statusText)}</p>
         <div class="editor-actions">
-          <button id="authorize-open" type="button" class="btn-primary">Authorize and open</button>
-          <button id="share-link" type="button" class="btn-secondary" disabled>Share public link</button>
-          <button id="save-drive" type="button" class="btn-primary" disabled>${DRIVE_ICON_SVG}<span>Save to Drive</span></button>
+          <button id="authorize-open" type="button" class="btn-primary">${t('toolbar.authorizeOpen')}</button>
+          <button id="share-link" type="button" class="btn-secondary" disabled>${t('toolbar.share')}</button>
+          <button id="save-drive" type="button" class="btn-primary" disabled>${DRIVE_ICON_SVG}<span>${t('toolbar.save')}</span></button>
         </div>
       </header>
-      <section id="editor-host" class="editor-host" aria-label="eXeLearning editor"></section>
+      <section id="editor-host" class="editor-host" aria-label="${t('toolbar.editorAria')}"></section>
     </main>
   `;
 }

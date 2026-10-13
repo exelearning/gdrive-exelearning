@@ -32,6 +32,10 @@ Live deploy: <https://exelearning.github.io/gdrive-exelearning/>
   read access on the Drive file and hands you a `/view?fileId=…` URL.
   Students open it without a Google account; the `.elpx` is rendered in
   their browser, so Drive only stores the file.
+- **Twelve interface languages**, the same as eXeLearning (ca, de, en, eo,
+  es, eu, fr, gl, it, pt, ro, va): picked from the browser language, changed
+  in the home page footer, or pinned with `?hl=es` on any URL. The editor
+  receives the same locale through its embedding config.
 
 ## Usage
 

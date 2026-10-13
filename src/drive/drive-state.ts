@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { DriveFileMetadata } from './drive-api';
 
 export type DriveOpenState = {
@@ -160,32 +161,30 @@ export function parseDriveStateFromParams(
     return { action: 'create', folderId, userId };
   }
 
-  throw new Error('Missing Google Drive state.');
+  throw new Error(t('error.missingState'));
 }
 
 export function parseDriveState(rawState: string | null): DriveState {
   if (!rawState) {
-    throw new Error('Missing Google Drive state.');
+    throw new Error(t('error.missingState'));
   }
 
   const parsed = JSON.parse(decodeURIComponent(rawState)) as unknown;
 
   if (!isRecord(parsed) || typeof parsed.action !== 'string') {
-    throw new Error('Invalid Google Drive state.');
+    throw new Error(t('error.invalidState'));
   }
 
   if (parsed.action === 'open') {
     if (!Array.isArray(parsed.ids) || parsed.ids.length === 0) {
-      throw new Error(
-        'Google Drive open state must include at least one file id.',
-      );
+      throw new Error(t('error.stateNoIds'));
     }
 
     return {
       action: 'open',
       ids: parsed.ids.map(id => {
         if (typeof id !== 'string') {
-          throw new Error('Google Drive file ids must be strings.');
+          throw new Error(t('error.stateIdsStrings'));
         }
         return id;
       }),
@@ -216,13 +215,13 @@ function parseResourceKeys(value: unknown): Record<string, string> | undefined {
   }
 
   if (!isRecord(value)) {
-    throw new Error('Google Drive resource keys must be an object.');
+    throw new Error(t('error.resourceKeysObject'));
   }
 
   const resourceKeys: Record<string, string> = {};
   for (const [fileId, resourceKey] of Object.entries(value)) {
     if (typeof resourceKey !== 'string') {
-      throw new Error('Google Drive resource key values must be strings.');
+      throw new Error(t('error.resourceKeysStrings'));
     }
     resourceKeys[fileId] = resourceKey;
   }

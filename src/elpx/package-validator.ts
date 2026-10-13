@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 /**
  * Validates that an extracted archive looks like an eXeLearning project.
  *
@@ -102,14 +104,13 @@ export function validatePackage(
       valid: false,
       legacy: true,
       shape,
-      error:
-        'This file is from an older version of eXeLearning and cannot be previewed.',
+      error: t('viewer.legacyUnsupported'),
     };
   }
   return {
     valid: false,
     legacy: false,
     shape,
-    error: 'The package does not contain an index.html.',
+    error: t('viewer.noIndex'),
   };
 }
