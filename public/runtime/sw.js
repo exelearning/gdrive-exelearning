@@ -139,9 +139,21 @@ function handleRuntimeFetch(match) {
     'X-Content-Type-Options': 'nosniff',
     'Cache-Control': 'private, no-store',
     // Keep package HTML isolated even though the iframe sandbox already
-    // blocks top navigation.
-    'Content-Security-Policy':
-      "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data: blob:; media-src 'self' data: blob:; frame-ancestors 'self'",
+    // blocks top navigation. Passive remote content (images, media, fonts,
+    // styles, embeds) is allowed over https because authors routinely link
+    // externally hosted assets from iDevices; code stays package-local via
+    // the explicit `script-src`, and `connect-src` falls back to
+    // `default-src 'self'` so package scripts cannot phone home.
+    'Content-Security-Policy': [
+      "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:",
+      "img-src 'self' data: blob: https:",
+      "media-src 'self' data: blob: https:",
+      "font-src 'self' data: blob: https:",
+      "style-src 'self' 'unsafe-inline' data: blob: https:",
+      "frame-src 'self' data: blob: https:",
+      "frame-ancestors 'self'",
+    ].join('; '),
   });
   return new Response(file.bytes, { status: 200, headers });
 }
