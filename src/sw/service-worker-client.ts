@@ -23,6 +23,31 @@ export interface RuntimeWorker {
 
 let activeWorker: RuntimeWorker | null = null;
 let pendingRegistration: Promise<RuntimeWorker> | null = null;
+// Sessions this page still shows. Browsers stop idle workers and drop their
+// memory, so the page keeps the bytes and re-registers them on request.
+const liveSessions = new Map<string, ViewerSession>();
+let listeningForLostSessions = false;
+
+function listenForLostSessions(): void {
+  if (listeningForLostSessions) {
+    return;
+  }
+  listeningForLostSessions = true;
+  navigator.serviceWorker.addEventListener('message', event => {
+    const data = event.data as { type?: unknown; sessionId?: unknown } | null;
+    if (
+      data?.type !== 'EXELEARNING_SESSION_LOST' ||
+      typeof data.sessionId !== 'string'
+    ) {
+      return;
+    }
+    const session = liveSessions.get(data.sessionId);
+    if (session && activeWorker) {
+      // On failure the worker times out and answers 410 by itself.
+      void postSession(activeWorker, session).catch(() => {});
+    }
+  });
+}
 
 function runtimeScope(): string {
   // APP_BASE_URL always ends with a slash (Vite normalises it).
@@ -60,6 +85,7 @@ async function registerRuntimeWorker(): Promise<RuntimeWorker> {
     type: 'classic',
   });
   await waitForActive(registration);
+  listenForLostSessions();
   const worker: RuntimeWorker = {
     registration,
     scriptUrl,
@@ -103,6 +129,14 @@ export async function registerSession(
   worker: RuntimeWorker,
   session: ViewerSession,
 ): Promise<void> {
+  await postSession(worker, session);
+  liveSessions.set(session.id, session);
+}
+
+async function postSession(
+  worker: RuntimeWorker,
+  session: ViewerSession,
+): Promise<void> {
   const target =
     worker.registration.active ??
     worker.registration.waiting ??
@@ -140,6 +174,7 @@ export async function unregisterSession(
   worker: RuntimeWorker,
   sessionId: string,
 ): Promise<void> {
+  liveSessions.delete(sessionId);
   const target =
     worker.registration.active ??
     worker.registration.waiting ??
